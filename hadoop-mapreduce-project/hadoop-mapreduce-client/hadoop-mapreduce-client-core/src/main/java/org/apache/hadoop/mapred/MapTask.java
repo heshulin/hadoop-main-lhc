@@ -18,12 +18,7 @@
 
 package org.apache.hadoop.mapred;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -1517,8 +1512,13 @@ public class MapTask extends Task {
       // finishes its work might be both a useful way to extend this and also
       // sufficient motivation for the latter approach.
       try {
+
         spillThread.interrupt();
         spillThread.join();
+
+        //-ljn-结束time线程
+        timeThread.interrupt();
+
       } catch (InterruptedException e) {
         throw new IOException("Spill failed", e);
       }
@@ -1567,11 +1567,25 @@ public class MapTask extends Task {
       }
     }
 
+    //-ljn-a thread to notice collector to spill.
     protected  class TimeThread extends Thread {
       @Override
       public void run() {
         try {
-          Thread.sleep(30000);
+            File conf = new File("/time_conf");
+            Reader reader = null;
+            int time = 30000;
+            try {
+                reader = new InputStreamReader(new FileInputStream(conf));
+                time = reader.read();
+            } catch (FileNotFoundException e) {
+                System.out.println("conf文件读取异常");
+                e.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("conf文件读取异常");
+                e.printStackTrace();
+            }
+            Thread.sleep(time);
           timeArrived = true;
         } catch (InterruptedException e) {
           e.printStackTrace();
@@ -1592,6 +1606,7 @@ public class MapTask extends Task {
             }
             try {
               spillLock.unlock();
+                System.out.println("开始spill");
               sortAndSpill();
             } catch (Throwable t) {
               sortSpillException = t;
