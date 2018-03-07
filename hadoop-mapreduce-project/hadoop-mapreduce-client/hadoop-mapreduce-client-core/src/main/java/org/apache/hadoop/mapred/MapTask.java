@@ -918,8 +918,9 @@ public class MapTask extends Task {
     // spill accounting
     private int maxRec;
     private int softLimit;
-    boolean spillInProgress;;
+    boolean spillInProgress;
     int bufferRemaining;
+    boolean timeArrived = false;
     volatile Throwable sortSpillException = null;
 
     int numSpills = 0;
@@ -931,6 +932,9 @@ public class MapTask extends Task {
     final BlockingBuffer bb = new BlockingBuffer();
     volatile boolean spillThreadRunning = false;
     final SpillThread spillThread = new SpillThread();
+    //-ljn
+    //final SpillThreadFollowingTime spillThreadFollowingTime = new SpillThreadFollowingTime();
+    final TimeThread timeThread = new TimeThread();
 
     private FileSystem rfs;
 
@@ -1040,13 +1044,18 @@ public class MapTask extends Task {
       } else {
         combineCollector = null;
       }
+      //初始值
       spillInProgress = false;
       minSpillsForCombine = job.getInt(JobContext.MAP_COMBINE_MIN_SPILLS, 3);
       spillThread.setDaemon(true);
       spillThread.setName("SpillThread");
       spillLock.lock();
       try {
+        //-ljn-start
         spillThread.start();
+        timeThread.start();
+        //spillThreadFollowingTime.start();
+
         while (!spillThreadRunning) {
           spillDone.await();
         }
@@ -1085,7 +1094,10 @@ public class MapTask extends Task {
       }
       checkSpillException();
       bufferRemaining -= METASIZE;
-      if (bufferRemaining <= 0) {
+      //-ljn-spill条件
+      if (bufferRemaining <= 0||timeArrived) {
+        //-ljn
+        timeArrived = false;
         // start spill if the thread is not running and the soft limit has been
         // reached
         spillLock.lock();
@@ -1136,6 +1148,7 @@ public class MapTask extends Task {
                       distanceTo(newPos, serBound),
                       // soft limit
                       softLimit)) - 2 * METASIZE;
+
               }
             }
           } while (false);
@@ -1362,8 +1375,10 @@ public class MapTask extends Task {
           throws IOException {
         // must always verify the invariant that at least METASIZE bytes are
         // available beyond kvindex, even when len == 0
+        //-ljn-触发spill的两个地方，collect或者write
         bufferRemaining -= len;
-        if (bufferRemaining <= 0) {
+        if (bufferRemaining <= 0||timeArrived) {
+          timeArrived = false;
           // writing these bytes could exhaust available buffer space or fill
           // the buffer to soft limit. check if spill or blocking are necessary
           boolean blockwrite = false;
@@ -1516,6 +1531,53 @@ public class MapTask extends Task {
 
     public void close() { }
 
+    //-ljn-A new thread to spill following time.-no used
+    protected class SpillThreadFollowingTime extends Thread {
+      @Override
+      public void run() {
+        try {
+          while(true){
+            Thread.sleep(30000);
+            while(!spillInProgress){
+              spillReady.await();
+            }
+            spillLock.unlock();
+            try {
+              sortAndSpill();
+            } catch (Throwable t) {
+              sortSpillException = t;
+            } finally {
+              //原来的恢复
+              spillLock.lock();
+              if (bufend < bufstart) {
+                bufvoid = kvbuffer.length;
+              }
+              kvstart = kvend;
+              bufstart = bufend;
+              //写完之后置成false
+              spillInProgress = false;
+            }
+          }
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        } finally {
+          spillLock.unlock();
+          spillThreadRunning = false;
+        }
+      }
+    }
+
+    protected  class TimeThread extends Thread {
+      @Override
+      public void run() {
+        try {
+          Thread.sleep(30000);
+          timeArrived = true;
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+    }
     protected class SpillThread extends Thread {
 
       @Override
@@ -1540,6 +1602,7 @@ public class MapTask extends Task {
               }
               kvstart = kvend;
               bufstart = bufend;
+              //写完之后置成false
               spillInProgress = false;
             }
           }
