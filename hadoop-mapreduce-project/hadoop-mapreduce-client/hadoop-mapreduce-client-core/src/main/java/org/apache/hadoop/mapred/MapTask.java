@@ -1049,6 +1049,7 @@ public class MapTask extends Task {
         //-ljn-start
         spillThread.start();
         timeThread.start();
+          System.out.println("****time thread is starting");
         //spillThreadFollowingTime.start();
 
         while (!spillThreadRunning) {
@@ -1092,6 +1093,7 @@ public class MapTask extends Task {
       //-ljn-spill条件
       if (bufferRemaining <= 0||timeArrived) {
         //-ljn
+          System.out.println("****collect-time arrived");
         timeArrived = false;
         // start spill if the thread is not running and the soft limit has been
         // reached
@@ -1373,6 +1375,7 @@ public class MapTask extends Task {
         //-ljn-触发spill的两个地方，collect或者write
         bufferRemaining -= len;
         if (bufferRemaining <= 0||timeArrived) {
+            System.out.println("****timeArrived");
           timeArrived = false;
           // writing these bytes could exhaust available buffer space or fill
           // the buffer to soft limit. check if spill or blocking are necessary
@@ -1518,6 +1521,7 @@ public class MapTask extends Task {
 
         //-ljn-结束time线程
         timeThread.interrupt();
+          System.out.println("****time thread is over");
 
       } catch (InterruptedException e) {
         throw new IOException("Spill failed", e);
@@ -1572,17 +1576,17 @@ public class MapTask extends Task {
       @Override
       public void run() {
         try {
-            File conf = new File("/time_conf");
+            File conf = new File("/spill_time.conf");
             Reader reader = null;
-            int time = 30000;
+            int time = 500;
             try {
                 reader = new InputStreamReader(new FileInputStream(conf));
                 time = reader.read();
             } catch (FileNotFoundException e) {
-                System.out.println("conf文件读取异常");
+                System.out.println("****conf文件读取异常");
                 e.printStackTrace();
             } catch (IOException e) {
-                System.out.println("conf文件读取异常");
+                System.out.println("****conf文件读取异常");
                 e.printStackTrace();
             }
             Thread.sleep(time);
@@ -1606,7 +1610,7 @@ public class MapTask extends Task {
             }
             try {
               spillLock.unlock();
-                System.out.println("开始spill");
+                System.out.println("****开始spill");
               sortAndSpill();
             } catch (Throwable t) {
               sortSpillException = t;
@@ -1617,7 +1621,7 @@ public class MapTask extends Task {
               }
               kvstart = kvend;
               bufstart = bufend;
-              //写完之后置成false
+              //-ljn写完之后置成false
               spillInProgress = false;
             }
           }
