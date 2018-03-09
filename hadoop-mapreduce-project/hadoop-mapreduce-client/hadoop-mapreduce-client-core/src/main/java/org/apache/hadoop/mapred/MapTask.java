@@ -1094,7 +1094,7 @@ public class MapTask extends Task {
       if (bufferRemaining <= 0||timeArrived) {
         //-ljn
           System.out.println("****collect-time arrived");
-        timeArrived = false;
+
         // start spill if the thread is not running and the soft limit has been
         // reached
         spillLock.lock();
@@ -1111,14 +1111,16 @@ public class MapTask extends Task {
               if ((kvbend + METASIZE) % kvbuffer.length !=
                   equator - (equator % METASIZE)) {
                 // spill finished, reclaim space
+                System.out.println("****another list is running but not spill thread.");
                 resetSpill();
                 bufferRemaining = Math.min(
                     distanceTo(bufindex, kvbidx) - 2 * METASIZE,
                     softLimit - bUsed) - METASIZE;
                 continue;
-              } else if (bufsoftlimit && kvindex != kvend) {
+              } else if ((bufsoftlimit && kvindex != kvend)||timeArrived) {
                 // spill records, if any collected; check latter, as it may
                 // be possible for metadata alignment to hit spill pcnt
+                System.out.println("****start spill");
                 startSpill();
                 final int avgRec = (int)
                   (mapOutputByteCounter.getCounter() /
@@ -1147,6 +1149,8 @@ public class MapTask extends Task {
                       softLimit)) - 2 * METASIZE;
 
               }
+              //-ljn
+              timeArrived = false;
             }
           } while (false);
         } finally {
@@ -1375,7 +1379,7 @@ public class MapTask extends Task {
         //-ljn-触发spill的两个地方，collect或者write
         bufferRemaining -= len;
         if (bufferRemaining <= 0||timeArrived) {
-            System.out.println("****timeArrived");
+            System.out.println("****write-time arrived");
           timeArrived = false;
           // writing these bytes could exhaust available buffer space or fill
           // the buffer to soft limit. check if spill or blocking are necessary
@@ -1580,8 +1584,10 @@ public class MapTask extends Task {
             Reader reader = null;
             int time = 500;
             try {
+
                 reader = new InputStreamReader(new FileInputStream(conf));
                 time = reader.read();
+              System.out.println("****file is read and time =" + time);
             } catch (FileNotFoundException e) {
                 System.out.println("****conf文件读取异常");
                 e.printStackTrace();
