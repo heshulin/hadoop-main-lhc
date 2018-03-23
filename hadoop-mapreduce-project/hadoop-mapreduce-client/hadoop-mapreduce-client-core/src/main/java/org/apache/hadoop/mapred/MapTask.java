@@ -1532,6 +1532,7 @@ public class MapTask extends Task {
 
                 //-ljn-结束time线程
                 timeThread.interrupt();
+                timeThread.join();
                 System.out.println("****time thread is over");
 
             } catch (InterruptedException e) {
