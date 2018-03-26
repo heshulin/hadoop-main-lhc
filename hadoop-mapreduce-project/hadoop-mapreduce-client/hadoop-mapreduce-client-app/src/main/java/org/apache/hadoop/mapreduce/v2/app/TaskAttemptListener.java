@@ -30,7 +30,6 @@ import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId;
 public interface TaskAttemptListener {
 
   InetSocketAddress getAddress();
-
   /**
    * Register a JVM with the listener.  This should be called as soon as a 
    * JVM ID is assigned to a task attempt, before it has been launched.

@@ -53,4 +53,8 @@ public enum TaskAttemptEventType {
 
   //Producer:Job
   TA_TOO_MANY_FETCH_FAILURE,
+
+
+  //powered by heshulin checkpoint
+  TA_SEND,
 }

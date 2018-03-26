@@ -230,6 +230,18 @@ public class TaskAttemptListenerImpl extends CompositeService
             TaskAttemptEventType.TA_COMMIT_PENDING));
   }
 
+  //powered by heshulin map节点发送
+  public void sendDataEvent(TaskAttemptID taskAttemptID)throws IOException {
+    LOG.info("Done acknowledgement from " + taskAttemptID.toString());
+    org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID =
+            TypeConverter.toYarn(taskAttemptID);
+    taskHeartbeatHandler.progressing(attemptID);
+
+    context.getEventHandler().handle(
+            new TaskAttemptEvent(attemptID, TaskAttemptEventType.TA_SEND));
+  }
+
+
   @Override
   public void done(TaskAttemptID taskAttemptID) throws IOException {
     LOG.info("Done acknowledgement from " + taskAttemptID.toString());

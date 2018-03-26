@@ -198,6 +198,8 @@ public abstract class TaskImpl implements Task, EventHandler<TaskEvent> {
         new AttemptFailedTransition())
     .addTransition(TaskStateInternal.RUNNING, TaskStateInternal.KILL_WAIT, 
         TaskEventType.T_KILL, KILL_TRANSITION)
+    .addTransition(TaskStateInternal.RUNNING, TaskStateInternal.RUNNING,
+        TaskEventType.T_ATTEMPT_SENDED,  new AttemptSendedTransition())
 
     // Transitions from KILL_WAIT state
     .addTransition(TaskStateInternal.KILL_WAIT,
@@ -703,6 +705,8 @@ public abstract class TaskImpl implements Task, EventHandler<TaskEvent> {
     }
   }
 
+
+
   private void sendTaskStartedEvent() {
     TaskStartedEvent tse = new TaskStartedEvent(
         TypeConverter.fromYarn(taskId), getLaunchTime(),
@@ -756,6 +760,17 @@ public abstract class TaskImpl implements Task, EventHandler<TaskEvent> {
           TaskStateInternal.SUCCEEDED);
       eventHandler.handle(new JobHistoryEvent(taskId.getJobId(), tfe));
     }
+  }
+
+  //powered by heshulin
+  private void sendTaskSendedEvents() {
+    eventHandler.handle(new JobTaskEvent(taskId, TaskState.RUNNING));
+    LOG.info("Task SENDED with attempt " + successfulAttempt);
+//    if (historyTaskStartGenerated) {
+//      TaskFinishedEvent tfe = createTaskFinishedEvent(this,
+//              TaskStateInternal.SENDED);
+//      eventHandler.handle(new JobHistoryEvent(taskId.getJobId(), tfe));
+//    }
   }
 
   /**
@@ -961,6 +976,25 @@ public abstract class TaskImpl implements Task, EventHandler<TaskEvent> {
       task.finished(TaskStateInternal.SUCCEEDED);
     }
   }
+
+  //powered by heshulin task  running to running
+  private static class AttemptSendedTransition
+          implements SingleArcTransition<TaskImpl, TaskEvent> {
+    @Override
+    public void transition(TaskImpl task, TaskEvent event) {
+      TaskTAttemptEvent taskTAttemptEvent = (TaskTAttemptEvent) event;
+      TaskAttemptId taskAttemptId = taskTAttemptEvent.getTaskAttemptID();
+      task.handleTaskAttemptSend(
+              taskAttemptId,
+              TaskAttemptCompletionEventStatus.SENDED);
+    }
+  }
+  private void handleTaskAttemptSend(TaskAttemptId attemptId,
+                                     TaskAttemptCompletionEventStatus status) {
+    eventHandler.handle(new JobEvent(this.taskId.getJobId(),JobEventType.JOB_SENDED));
+  }
+
+
 
   private static class AttemptKilledTransition implements
       SingleArcTransition<TaskImpl, TaskEvent> {

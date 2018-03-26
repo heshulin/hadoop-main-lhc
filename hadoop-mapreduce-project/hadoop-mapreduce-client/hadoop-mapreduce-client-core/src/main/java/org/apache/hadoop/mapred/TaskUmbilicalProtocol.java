@@ -24,6 +24,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.ipc.VersionedProtocol;
 import org.apache.hadoop.mapred.JvmTask;
+import org.apache.hadoop.mapred.checkpoint.MapTaskSendEventsUpdate;
 import org.apache.hadoop.mapreduce.security.token.JobTokenSelector;
 import org.apache.hadoop.security.token.TokenInfo;
 
@@ -158,7 +159,13 @@ public interface TaskUmbilicalProtocol extends VersionedProtocol {
   MapTaskCompletionEventsUpdate getMapCompletionEvents(JobID jobId, 
                                                        int fromIndex, 
                                                        int maxLocs,
-                                                       TaskAttemptID id) 
-  throws IOException;
+                                                       TaskAttemptID id)
+          throws IOException;
+
+  //powered by hehsulin
+
+
+
+
 
 }

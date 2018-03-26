@@ -1016,7 +1016,6 @@ abstract public class Task implements Writable, Configurable {
       }
       updater.updateCounters();
     }
-    
     gcUpdater.incrementGcCounter();
     updateResourceCounters();
   }

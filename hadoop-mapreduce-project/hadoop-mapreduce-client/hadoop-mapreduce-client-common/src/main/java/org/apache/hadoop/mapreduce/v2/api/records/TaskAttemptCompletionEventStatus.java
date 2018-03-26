@@ -23,5 +23,6 @@ public enum TaskAttemptCompletionEventStatus {
   KILLED,
   SUCCEEDED,
   OBSOLETE,
-  TIPFAILED
+  TIPFAILED,
+  SENDED
 }

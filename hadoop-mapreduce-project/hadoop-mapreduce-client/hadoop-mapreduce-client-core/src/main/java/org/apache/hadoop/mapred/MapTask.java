@@ -56,6 +56,7 @@ import org.apache.hadoop.io.serializer.Serializer;
 import org.apache.hadoop.mapred.IFile.Writer;
 import org.apache.hadoop.mapred.Merger.Segment;
 import org.apache.hadoop.mapred.SortedRanges.SkipRangeIterator;
+import org.apache.hadoop.mapred.checkpoint.UploadCheckpointHDFSThread;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -76,7 +77,7 @@ import org.apache.hadoop.util.StringInterner;
 import org.apache.hadoop.util.StringUtils;
 
 /** A Map task. */
-//也也
+//hsl
 @InterfaceAudience.LimitedPrivate({"MapReduce"})
 @InterfaceStability.Unstable
 public class MapTask extends Task {
@@ -931,7 +932,7 @@ public class MapTask extends Task {
     final BlockingBuffer bb = new BlockingBuffer();
     volatile boolean spillThreadRunning = false;
     final SpillThread spillThread = new SpillThread();
-
+    final UploadCheckpointHDFSThread uploadCheckpointHDFSThread = new UploadCheckpointHDFSThread();
     private FileSystem rfs;
 
     // Counters
@@ -1605,6 +1606,17 @@ public class MapTask extends Task {
         for (int i = 0; i < partitions; ++i) {
           IFile.Writer<K, V> writer = null;
           try {
+
+            System.out.println("开始检查点设置");
+            TaskAttemptID data1 = getTaskID();
+            Path data2 = filename;
+            //data3暂未设置
+            long data3 = 10;
+
+            uploadCheckpointHDFSThread.init(data1,data2,data3);
+            uploadCheckpointHDFSThread.start();
+
+
             long segmentStart = out.getPos();
             FSDataOutputStream partitionOut = CryptoUtils.wrapIfNecessary(job, out);
             writer = new Writer<K, V>(job, partitionOut, keyClass, valClass, codec,

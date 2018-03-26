@@ -360,6 +360,12 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
           .addTransition(JobStateInternal.RUNNING, JobStateInternal.REBOOT,
               JobEventType.JOB_AM_REBOOT,
               INTERNAL_REBOOT_TRANSITION)
+          .addTransition(JobStateInternal.RUNNING, JobStateInternal.RUNNING,
+                  JobEventType.JOB_TASK_ATTEMPT_COMPLETED,
+                  TASK_ATTEMPT_COMPLETED_EVENT_TRANSITION)
+          .addTransition(JobStateInternal.RUNNING, JobStateInternal.RUNNING,
+                  JobEventType.JOB_SENDED,
+                  new SendedTasksTransition())
 
           // Transitions from KILL_WAIT state.
           .addTransition
@@ -1826,6 +1832,14 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
     }
   }
 
+  //powered by heshulin
+  private static class SendedTasksTransition implements
+          SingleArcTransition<JobImpl, JobEvent> {
+    @Override
+    public void transition(JobImpl job, JobEvent event) {
+      LOG.info("EVENT SENDED SUCCEED");
+    }
+  }
   private static class TaskAttemptCompletedEventTransition implements
       SingleArcTransition<JobImpl, JobEvent> {
     @Override

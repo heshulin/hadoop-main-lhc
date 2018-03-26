@@ -306,6 +306,9 @@ public abstract class TaskAttemptImpl implements
      .addTransition(TaskAttemptStateInternal.RUNNING,
          TaskAttemptStateInternal.KILL_CONTAINER_CLEANUP, TaskAttemptEventType.TA_KILL,
          CLEANUP_CONTAINER_TRANSITION)
+     .addTransition(TaskAttemptStateInternal.RUNNING,
+             TaskAttemptStateInternal.RUNNING, TaskAttemptEventType.TA_SEND,
+             new SendedTransition())
 
      // Transitions from COMMIT_PENDING state
      .addTransition(TaskAttemptStateInternal.COMMIT_PENDING,
@@ -1714,7 +1717,7 @@ public abstract class TaskAttemptImpl implements
     @Override
     public void transition(TaskAttemptImpl taskAttempt, 
         TaskAttemptEvent event) {
-      //set the finish time
+      //set the finish time·
       taskAttempt.setFinishTime();
       taskAttempt.eventHandler.handle(
           createJobCounterUpdateEventTASucceeded(taskAttempt));
@@ -1880,6 +1883,39 @@ public abstract class TaskAttemptImpl implements
     }
   }
 
+  //powered by heshulin running to running 变迁
+  private static class SendedTransition implements
+          SingleArcTransition<TaskAttemptImpl, TaskAttemptEvent> {
+    @SuppressWarnings("unchecked")
+    @Override
+    public void transition(TaskAttemptImpl taskAttempt,
+                           TaskAttemptEvent event) {
+      // unregister it to TaskAttemptListener so that it stops listening
+      // for it
+      taskAttempt.taskAttemptListener.unregister(
+              taskAttempt.attemptId, taskAttempt.jvmID);
+      // Store reschedule flag so that after clean up is completed, new
+      // attempt is scheduled/rescheduled based on it.
+      //sendEventToTaskAttempt(taskAttempt, event);
+      // Store reschedule flag so that after clean up is completed, new
+      // attempt is scheduled/rescheduled based on it.
+//      if (event instanceof TaskAttemptKillEvent) {
+//        taskAttempt.setRescheduleNextAttempt(
+//                ((TaskAttemptKillEvent)event).getRescheduleAttempt());
+//      }
+
+      taskAttempt.eventHandler.handle(new TaskTAttemptEvent(
+              taskAttempt.attemptId,
+              TaskEventType.T_ATTEMPT_SENDED));
+
+      //这里有没有用！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！？？？？？？
+//      taskAttempt.eventHandler.handle
+//              (new SpeculatorEvent
+//                      (taskAttempt.reportedStatus, taskAttempt.clock.getTime()));
+    }
+  }
+
+
   private static class KilledTransition implements
       SingleArcTransition<TaskAttemptImpl, TaskAttemptEvent> {
 
@@ -1949,6 +1985,25 @@ public abstract class TaskAttemptImpl implements
             taskAttempt.container.getContainerToken(),
             ContainerLauncher.EventType.CONTAINER_REMOTE_CLEANUP));
   }
+
+
+  //powered by heshulin
+  @SuppressWarnings("unchecked")
+  private static void sendEventToTaskAttempt(TaskAttemptImpl taskAttempt,
+                                           TaskAttemptEvent event) {
+
+
+    taskAttempt.reportedStatus.progress = 1.0f;
+    taskAttempt.updateProgressSplits();
+    //send the cleanup event to containerLauncher
+    taskAttempt.eventHandler.handle(
+            new ContainerLauncherEvent(taskAttempt.attemptId,
+                    taskAttempt.container.getId(), StringInterner
+                    .weakIntern(taskAttempt.container.getNodeId().toString()),
+                    taskAttempt.container.getContainerToken(),
+                    ContainerLauncher.EventType.CONTAINER_REMOTE_CLEANUP));
+  }
+
 
   private void addDiagnosticInfo(String diag) {
     if (diag != null && !diag.equals("")) {
