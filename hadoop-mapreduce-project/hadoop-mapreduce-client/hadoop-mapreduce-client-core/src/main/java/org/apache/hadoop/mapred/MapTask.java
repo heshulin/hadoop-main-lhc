@@ -1096,7 +1096,7 @@ public class MapTask extends Task {
             checkSpillException();
             bufferRemaining -= METASIZE;
             //-ljn-spill条件
-            if (bufferRemaining <= 0 || (timeArrived)) {
+            if (bufferRemaining <= 0 || (timeArrived&&distanceTo(4*kvindex, bufindex)>0)) {
                 //-ljn
                 //System.out.println("****collect-spill time arrived");
 
@@ -1587,6 +1587,7 @@ public class MapTask extends Task {
 
         //-ljn-a thread to notice collector to spill.
         protected class TimeThread extends Thread {
+            int spilltimes = 0;
             @Override
             public void run() {
                 try {
@@ -1608,6 +1609,14 @@ public class MapTask extends Task {
                     while (true) {
                         Thread.sleep(time);
                         timeArrived = true;
+                        spilltimes++;
+                        if(spilltimes %2 == 0){
+                            System.out.println("start merge");
+                            nowIndex = numSpills;
+                            shxyMergeParts();
+                            lastIndex = nowIndex;
+                            System.out.println("end merge");
+                        }
 //                        new Thread(){
 //                            @Override
 //                            public void run() {
@@ -1621,6 +1630,10 @@ public class MapTask extends Task {
 //                        }.start();
                     }
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             }
@@ -1922,16 +1935,174 @@ public class MapTask extends Task {
         }
 
         private int mSpillNum = 0;
+        final Path[] filename = new Path[20];
+        int lastIndex = 0;
+        int nowIndex = 0;
+        int mergeTimes = 0;
+        private void shxyMergeParts() throws IOException, InterruptedException,
+                ClassNotFoundException {
+            // get the approximate size of the final output/index files
+            long finalOutFileSize = 0;
+            long finalIndexFileSize = 0;
+
+            final TaskAttemptID mapId = getTaskID();
+            System.out.println("shxy : mapId = " + mapId.toString());
+
+            for(int i = lastIndex; i < nowIndex; i++) {
+                filename[i] = mapOutputFile.getSpillFile(i);
+                finalOutFileSize += rfs.getFileStatus(filename[i]).getLen();
+            }
+            if (nowIndex - lastIndex>0){
+                mergeTimes++;
+            }else {
+                System.out.println("没有新的spill");
+                return;
+            }
+      /*if (nowIndex == 1) { //the spill is the final output
+        System.out.println("shxy : final output");
+        sameVolRename(filename[0],
+            mapOutputFile.getOutputFileForWriteInVolume(filename[0]));
+        if (indexCacheList.size() == 0) {
+          sameVolRename(mapOutputFile.getSpillIndexFile(0),
+            mapOutputFile.getOutputIndexFileForWriteInVolume(filename[0]));
+        } else {
+          indexCacheList.get(0).writeToFile(
+            mapOutputFile.getOutputIndexFileForWriteInVolume(filename[0]), job);
+        }
+        sortPhase.complete();
+
+        return;
+      }*/
+
+            // read in paged indices
+            for (int i = indexCacheList.size(); i < nowIndex; ++i) {
+                Path indexFileName = mapOutputFile.getSpillIndexFile(i);
+                indexCacheList.add(new SpillRecord(indexFileName, job));
+            }
+
+            //make correction in the length to include the sequence file header
+            //lengths for each partition
+            finalOutFileSize += partitions * APPROX_HEADER_LENGTH;
+            finalIndexFileSize = partitions * MAP_OUTPUT_INDEX_RECORD_LENGTH;
+            Path finalOutputFile =
+                    mapOutputFile.getOutputFileForWrite(finalOutFileSize);
+            /**
+             * shxy
+             */
+
+            finalOutputFile = new Path(finalOutputFile.toString() + mergeTimes);
+
+            Path finalIndexFile =
+                    mapOutputFile.getOutputIndexFileForWrite(finalIndexFileSize);
+            System.out.println("shxy: finalIndexFile = " + finalIndexFile.toString());
+
+            //The output stream for the final single output file
+            FSDataOutputStream finalOut = rfs.create(finalOutputFile, true, 4096);
+            System.out.println("shxy : finalOutputFile = " + finalOutputFile);
+            if (nowIndex == 0) {
+                //create dummy files
+                IndexRecord rec = new IndexRecord();
+                SpillRecord sr = new SpillRecord(partitions);
+                try {
+                    for (int i = 0; i < partitions; i++) {
+                        long segmentStart = finalOut.getPos();
+                        FSDataOutputStream finalPartitionOut = CryptoUtils.wrapIfNecessary(job, finalOut);
+                        Writer<K, V> writer =
+                                new Writer<K, V>(job, finalPartitionOut, keyClass, valClass, codec, null);
+                        writer.close();
+                        rec.startOffset = segmentStart;
+                        rec.rawLength = writer.getRawLength() + CryptoUtils.cryptoPadding(job);
+                        rec.partLength = writer.getCompressedLength() + CryptoUtils.cryptoPadding(job);
+                        sr.putIndex(rec, i);
+                    }
+                    sr.writeToFile(finalIndexFile, job);
+                } finally {
+                    finalOut.close();
+                }
+                sortPhase.complete();
+                return;
+            }
+            {
+                sortPhase.addPhases(partitions); // Divide sort phase into sub-phases
+
+                IndexRecord rec = new IndexRecord();
+                final SpillRecord spillRec = new SpillRecord(partitions);
+                for (int parts = 0; parts < partitions; parts++) {
+                    //create the segments to be merged
+                    List<Segment<K,V>> segmentList =
+                            new ArrayList<Segment<K, V>>(nowIndex - lastIndex);
+                    for(int i = 0; i < nowIndex - lastIndex; i++) {
+                        IndexRecord indexRecord = indexCacheList.get(i + lastIndex).getIndex(parts);
+
+                        Segment<K,V> s =
+                                new Segment<K,V>(job, rfs, filename[i + lastIndex], indexRecord.startOffset,
+                                        indexRecord.partLength, codec, true);
+                        segmentList.add(i, s);
+
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("MapId=" + mapId + " Reducer=" + parts +
+                                    "Spill =" + i + "(" + indexRecord.startOffset + "," +
+                                    indexRecord.rawLength + ", " + indexRecord.partLength + ")");
+                        }
+                    }
+
+                    int mergeFactor = job.getInt(JobContext.IO_SORT_FACTOR, 100);
+                    // sort the segments only if there are intermediate merges
+                    boolean sortSegments = segmentList.size() > mergeFactor;
+                    //merge
+                    @SuppressWarnings("unchecked")
+                    RawKeyValueIterator kvIter = Merger.merge(job, rfs,
+                            keyClass, valClass, codec,
+                            segmentList, mergeFactor,
+                            new Path(mapId.toString()),
+                            job.getOutputKeyComparator(), reporter, sortSegments,
+                            null, spilledRecordsCounter, sortPhase.phase(),
+                            TaskType.MAP);
+
+                    //write merged output to disk
+                    long segmentStart = finalOut.getPos();
+                    FSDataOutputStream finalPartitionOut = CryptoUtils.wrapIfNecessary(job, finalOut);
+                    System.out.println("shxy : ********" + finalPartitionOut.toString());
+                    Writer<K, V> writer =
+                            new Writer<K, V>(job, finalPartitionOut, keyClass, valClass, codec,
+                                    spilledRecordsCounter);
+                    if (combinerRunner == null || nowIndex < minSpillsForCombine) {
+                        System.out.println("no combinerRunner");
+                        Merger.writeFile(kvIter, writer, reporter, job);
+                    } else {
+                        System.out.println("use combinerRunner");
+                        combineCollector.setWriter(writer);
+                        combinerRunner.combine(kvIter, combineCollector);
+                    }
+
+                    //close
+                    writer.close();
+
+                    sortPhase.startNextPhase();
+
+                    // record offsets
+                    rec.startOffset = segmentStart;
+                    rec.rawLength = writer.getRawLength() + CryptoUtils.cryptoPadding(job);
+                    rec.partLength = writer.getCompressedLength() + CryptoUtils.cryptoPadding(job);
+                    spillRec.putIndex(rec, parts);
+                }
+                spillRec.writeToFile(finalIndexFile, job);
+                finalOut.close();
+                /*for(int i = lastIndex; i < nowIndex; i++) {
+                    rfs.delete(filename[i],true);
+                }*/
+            }
+        }
 
         private void mergeParts() throws IOException, InterruptedException,
                 ClassNotFoundException {
             // get the approximate size of the final output/index files
             long finalOutFileSize = 0;
             long finalIndexFileSize = 0;
-            final Path[] filename = new Path[numSpills - mSpillNum];
+            final Path[] filename = new Path[numSpills];
             final TaskAttemptID mapId = getTaskID();
 
-            for (int i = mSpillNum; i < numSpills; i++) {
+            for(int i = 0; i < numSpills; i++) {
                 filename[i] = mapOutputFile.getSpillFile(i);
                 finalOutFileSize += rfs.getFileStatus(filename[i]).getLen();
             }
@@ -1997,13 +2168,13 @@ public class MapTask extends Task {
                 final SpillRecord spillRec = new SpillRecord(partitions);
                 for (int parts = 0; parts < partitions; parts++) {
                     //create the segments to be merged
-                    List<Segment<K, V>> segmentList =
+                    List<Segment<K,V>> segmentList =
                             new ArrayList<Segment<K, V>>(numSpills);
-                    for (int i = mSpillNum; i < numSpills; i++) {
+                    for(int i = 0; i < numSpills; i++) {
                         IndexRecord indexRecord = indexCacheList.get(i).getIndex(parts);
 
-                        Segment<K, V> s =
-                                new Segment<K, V>(job, rfs, filename[i], indexRecord.startOffset,
+                        Segment<K,V> s =
+                                new Segment<K,V>(job, rfs, filename[i], indexRecord.startOffset,
                                         indexRecord.partLength, codec, true);
                         segmentList.add(i, s);
 
@@ -2053,9 +2224,9 @@ public class MapTask extends Task {
                 }
                 spillRec.writeToFile(finalIndexFile, job);
                 finalOut.close();
-                for (int i = 0; i < numSpills; i++) {
-                    rfs.delete(filename[i], true);
-                }
+                /*for(int i = 0; i < numSpills; i++) {
+                    rfs.delete(filename[i],true);
+                }*/
             }
         }
 
