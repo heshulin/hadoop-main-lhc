@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobACLsManager;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
+import org.apache.hadoop.mapred.checkpoint.TaskSendEvent;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.JobACL;
 import org.apache.hadoop.mapreduce.MRConfig;
@@ -402,6 +403,11 @@ public class TestHsWebServicesAcls {
     public TaskCompletionEvent[] getMapAttemptCompletionEvents(
         int startIndex, int maxEvents) {
       return mockJob.getMapAttemptCompletionEvents(startIndex, maxEvents);
+    }
+
+    @Override
+    public TaskSendEvent[] getMapAttemptSendEvents(int startIndex, int maxEvents) {
+      return new TaskSendEvent[0];
     }
 
     @Override

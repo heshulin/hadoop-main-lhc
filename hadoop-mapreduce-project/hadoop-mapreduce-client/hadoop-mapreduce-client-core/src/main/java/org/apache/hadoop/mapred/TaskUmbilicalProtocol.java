@@ -167,5 +167,11 @@ public interface TaskUmbilicalProtocol extends VersionedProtocol {
   public void sendDataEvent(TaskAttemptID taskAttemptID)throws IOException;
 
 
+  MapTaskSendEventsUpdate getMapSendEvents(JobID jobId,
+                                                       int fromIndex,
+                                                       int maxLocs,
+                                                       TaskAttemptID id)
+          throws IOException;
+
 
 }

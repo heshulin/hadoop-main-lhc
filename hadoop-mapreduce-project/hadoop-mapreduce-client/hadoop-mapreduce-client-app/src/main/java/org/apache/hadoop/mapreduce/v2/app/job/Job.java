@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
+import org.apache.hadoop.mapred.checkpoint.TaskSendEvent;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.JobACL;
 import org.apache.hadoop.mapreduce.v2.api.records.AMInfo;
@@ -91,6 +92,9 @@ public interface Job {
 
   TaskCompletionEvent[]
       getMapAttemptCompletionEvents(int startIndex, int maxEvents);
+
+  TaskSendEvent[]
+      getMapAttemptSendEvents(int startIndex, int maxEvents);
 
   /**
    * @return information for MR AppMasters (previously failed and current)

@@ -26,6 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.ipc.ProtocolSignature;
 import org.apache.hadoop.mapred.SortedRanges.Range;
+import org.apache.hadoop.mapred.checkpoint.MapTaskSendEventsUpdate;
 import org.apache.hadoop.mapreduce.TaskType;
 
 public class TestTaskCommit extends HadoopTestCase {
@@ -129,6 +130,11 @@ public class TestTaskCommit extends HadoopTestCase {
     @Override
     public void sendDataEvent(TaskAttemptID taskAttemptID) throws IOException {
 
+    }
+
+    @Override
+    public MapTaskSendEventsUpdate getMapSendEvents(JobID jobId, int fromIndex, int maxLocs, TaskAttemptID id) throws IOException {
+      return null;
     }
 
     @Override

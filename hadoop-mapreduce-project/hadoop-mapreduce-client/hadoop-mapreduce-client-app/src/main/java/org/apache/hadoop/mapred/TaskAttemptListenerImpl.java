@@ -34,6 +34,8 @@ import org.apache.hadoop.ipc.ProtocolSignature;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.ipc.Server;
 import org.apache.hadoop.mapred.SortedRanges.Range;
+import org.apache.hadoop.mapred.checkpoint.MapTaskSendEventsUpdate;
+import org.apache.hadoop.mapred.checkpoint.TaskSendEvent;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.mapreduce.TypeConverter;
 import org.apache.hadoop.mapreduce.security.token.JobTokenSecretManager;
@@ -243,6 +245,26 @@ public class TaskAttemptListenerImpl extends CompositeService
             new TaskAttemptEvent(attemptID, TaskAttemptEventType.TA_SEND));
   }
 
+  @Override
+  public MapTaskSendEventsUpdate getMapSendEvents(
+          JobID jobIdentifier, int startIndex, int maxEvents,
+          TaskAttemptID taskAttemptID) throws IOException {
+    LOG.info("MapCompletionEvents request from " + taskAttemptID.toString()
+            + ". startIndex " + startIndex + " maxEvents " + maxEvents);
+
+    // TODO: shouldReset is never used. See TT. Ask for Removal.
+    boolean shouldReset = false;
+    org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID =
+            TypeConverter.toYarn(taskAttemptID);
+    TaskSendEvent[] events =
+            context.getJob(attemptID.getTaskId().getJobId()).getMapAttemptSendEvents(
+                    startIndex, maxEvents);
+
+    taskHeartbeatHandler.progressing(attemptID);
+
+    return new MapTaskSendEventsUpdate(events, shouldReset);
+  }
+
 
   @Override
   public void done(TaskAttemptID taskAttemptID) throws IOException {
@@ -308,6 +330,7 @@ public class TaskAttemptListenerImpl extends CompositeService
     
     return new MapTaskCompletionEventsUpdate(events, shouldReset);
   }
+
 
   @Override
   public boolean ping(TaskAttemptID taskAttemptID) throws IOException {

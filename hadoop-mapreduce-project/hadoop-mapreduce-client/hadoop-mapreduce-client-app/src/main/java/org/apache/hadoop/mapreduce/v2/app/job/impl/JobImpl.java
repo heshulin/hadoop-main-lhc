@@ -49,6 +49,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobACLsManager;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
+import org.apache.hadoop.mapred.checkpoint.TaskSendEvent;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.JobACL;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -90,25 +91,7 @@ import org.apache.hadoop.mapreduce.v2.app.commit.CommitterJobSetupEvent;
 import org.apache.hadoop.mapreduce.v2.app.job.JobStateInternal;
 import org.apache.hadoop.mapreduce.v2.app.job.Task;
 import org.apache.hadoop.mapreduce.v2.app.job.TaskAttempt;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobAbortCompletedEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobCommitFailedEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobCounterUpdateEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobDiagnosticsUpdateEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobEventType;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobFinishEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobSetupFailedEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobStartEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobTaskAttemptCompletedEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobTaskAttemptFetchFailureEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobTaskEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobUpdatedNodesEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskAttemptEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskAttemptEventType;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskAttemptKillEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskEventType;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskRecoverEvent;
+import org.apache.hadoop.mapreduce.v2.app.job.event.*;
 import org.apache.hadoop.mapreduce.v2.app.metrics.MRAppMetrics;
 import org.apache.hadoop.mapreduce.v2.util.MRApps;
 import org.apache.hadoop.mapreduce.v2.util.MRBuilderUtils;
@@ -145,6 +128,9 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
 
   private static final TaskCompletionEvent[]
     EMPTY_TASK_COMPLETION_EVENTS = new TaskCompletionEvent[0];
+  //heshulin
+  private static final TaskSendEvent[]
+          EMPTY_TASK_SEND_EVENTS = new TaskSendEvent[0];
 
   private static final Log LOG = LogFactory.getLog(JobImpl.class);
 
@@ -217,6 +203,8 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
   private int allowedReduceFailuresPercent = 0;
   private List<TaskAttemptCompletionEvent> taskAttemptCompletionEvents;
   private List<TaskCompletionEvent> mapAttemptCompletionEvents;
+  //heshulin
+  private List<TaskSendEvent> mapAttemptSendEvents;
   private List<Integer> taskCompletionIdxToMapCompletionIdx;
   private final List<String> diagnostics = new ArrayList<String>();
   
@@ -849,6 +837,25 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
     }
   }
 
+  //heshulin
+  @Override
+  public TaskSendEvent[] getMapAttemptSendEvents(int startIndex, int maxEvents) {
+    TaskSendEvent[] events = EMPTY_TASK_SEND_EVENTS;
+    readLock.lock();
+    try {
+      if (mapAttemptSendEvents.size() > startIndex) {
+        int actualMax = Math.min(maxEvents,
+                (mapAttemptSendEvents.size() - startIndex));
+        events = mapAttemptSendEvents.subList(startIndex,
+                actualMax + startIndex).toArray(events);
+      }
+      return events;
+    } finally {
+      readLock.unlock();
+    }
+
+  }
+
   @Override
   public List<String> getDiagnostics() {
     readLock.lock();
@@ -1476,6 +1483,10 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
                 job.numMapTasks + job.numReduceTasks + 10);
         job.mapAttemptCompletionEvents =
             new ArrayList<TaskCompletionEvent>(job.numMapTasks + 10);
+        //heshulin
+        job.mapAttemptSendEvents =
+                new ArrayList<TaskSendEvent>(job.numMapTasks + 10);
+
         job.taskCompletionIdxToMapCompletionIdx = new ArrayList<Integer>(
             job.numMapTasks + job.numReduceTasks + 10);
 
@@ -1839,6 +1850,7 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
     public void transition(JobImpl job, JobEvent event) {
       LOG.info("EVENT SENDED SUCCEED by heshulin!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
       System.out.println("开始检查点设置");
+      job.mapAttemptSendEvents.add(new TaskSendEvent());
     }
   }
   private static class TaskAttemptCompletedEventTransition implements

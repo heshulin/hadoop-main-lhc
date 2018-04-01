@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.ipc.ProtocolSignature;
+import org.apache.hadoop.mapred.checkpoint.MapTaskSendEventsUpdate;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
@@ -146,6 +147,11 @@ public class TestMapProgress extends TestCase {
     @Override
     public void sendDataEvent(TaskAttemptID taskAttemptID) throws IOException {
 
+    }
+
+    @Override
+    public MapTaskSendEventsUpdate getMapSendEvents(JobID jobId, int fromIndex, int maxLocs, TaskAttemptID id) throws IOException {
+      return null;
     }
 
     public void reportNextRecordRange(TaskAttemptID taskid, 

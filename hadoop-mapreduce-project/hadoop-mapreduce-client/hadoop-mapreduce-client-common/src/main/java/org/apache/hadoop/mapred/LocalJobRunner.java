@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.ipc.ProtocolSignature;
+import org.apache.hadoop.mapred.checkpoint.MapTaskSendEventsUpdate;
 import org.apache.hadoop.mapreduce.Cluster.JobTrackerStatus;
 import org.apache.hadoop.mapreduce.ClusterMetrics;
 import org.apache.hadoop.mapreduce.MRConfig;
@@ -704,6 +705,11 @@ public class LocalJobRunner implements ClientProtocol {
     @Override
     public void sendDataEvent(TaskAttemptID taskAttemptID) throws IOException {
 
+    }
+
+    @Override
+    public MapTaskSendEventsUpdate getMapSendEvents(JobID jobId, int fromIndex, int maxLocs, TaskAttemptID id) throws IOException {
+      return null;
     }
 
   }
