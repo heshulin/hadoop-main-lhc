@@ -25,7 +25,7 @@ public class MapTaskSendEventsUpdate {
         return reset;
     }
 
-    public TaskSendEvent[] getMapTaskCompletionEvents() {
+    public TaskSendEvent[] getMapTaskSendEvents() {
         return events;
     }
 

@@ -44,6 +44,7 @@ import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskStatus;
+import org.apache.hadoop.mapred.checkpoint.TaskSendEvent;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskID;
@@ -164,6 +165,35 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
       LOG.info("Ignoring output of failed map TIP: '" +
           event.getTaskAttemptId() + "'");
       break;
+    }
+  }
+
+  //何树林
+  @Override
+  public void sendresolve(TaskSendEvent event) throws IOException, InterruptedException {
+    switch (event.getTaskStatus()) {
+      case SUCCEEDED:
+        URI u = getBaseURI(reduceId, event.getTaskTrackerHttp());
+        addKnownMapOutput(u.getHost() + ":" + u.getPort(),
+                u.toString(),
+                event.getTaskAttemptId());
+        maxMapRuntime = Math.max(maxMapRuntime, event.getTaskRunTime());
+        break;
+      case FAILED:
+      case KILLED:
+      case OBSOLETE:
+        obsoleteMapOutput(event.getTaskAttemptId());
+        LOG.info("Ignoring obsolete output of " + event.getTaskStatus() +
+                " map-task: '" + event.getTaskAttemptId() + "'");
+        break;
+      case TIPFAILED:
+        tipFailed(event.getTaskAttemptId().getTaskID());
+        LOG.info("Ignoring output of failed map TIP: '" +
+                event.getTaskAttemptId() + "'");
+        break;
+      case SENDED:
+        LOG.info("何树林——成功接收send事件: '" );
+        break;
     }
   }
 

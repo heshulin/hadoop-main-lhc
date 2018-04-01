@@ -24,6 +24,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapred.MapTaskCompletionEventsUpdate;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskUmbilicalProtocol;
+import org.apache.hadoop.mapred.checkpoint.MapTaskSendEventsUpdate;
+import org.apache.hadoop.mapred.checkpoint.TaskSendEvent;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 
 class EventFetcher<K,V> extends Thread {
@@ -153,16 +155,16 @@ class EventFetcher<K,V> extends Thread {
           throws IOException, InterruptedException {
 
     int numSendMaps = 0;
-    TaskCompletionEvent events[] = null;
+    TaskSendEvent events[] = null;
 
     do {
-      MapTaskCompletionEventsUpdate update =
-              umbilical.getMapCompletionEvents(
+      MapTaskSendEventsUpdate update =
+              umbilical.getMapSendEvents(
                       (org.apache.hadoop.mapred.JobID)reduce.getJobID(),
                       fromEventIdx,
                       maxEventsToFetch,
                       (org.apache.hadoop.mapred.TaskAttemptID)reduce);
-      events = update.getMapTaskCompletionEvents();
+      events = update.getMapTaskSendEvents();
       LOG.debug("Got " + events.length + " map completion events from " +
               fromEventIdx);
 
@@ -177,9 +179,9 @@ class EventFetcher<K,V> extends Thread {
       //    fetching from those maps.
       // 3. Remove TIPFAILED maps from neededOutputs since we don't need their
       //    outputs at all.
-      for (TaskCompletionEvent event : events) {
-        scheduler.resolve(event);
-        if (TaskCompletionEvent.Status.SUCCEEDED == event.getTaskStatus()) {
+      for (TaskSendEvent event : events) {
+        scheduler.sendresolve(event);
+        if (TaskSendEvent.Status.SENDED == event.getTaskStatus()) {
           ++numSendMaps;
         }
       }
