@@ -987,6 +987,7 @@ public abstract class TaskImpl implements Task, EventHandler<TaskEvent> {
       task.handleTaskAttemptSend(
               taskAttemptId,
               TaskAttemptCompletionEventStatus.SENDED);
+      System.out.println("task shijian 何树林！！！！！！！！！！！！！！！！！！");
     }
   }
   private void handleTaskAttemptSend(TaskAttemptId attemptId,

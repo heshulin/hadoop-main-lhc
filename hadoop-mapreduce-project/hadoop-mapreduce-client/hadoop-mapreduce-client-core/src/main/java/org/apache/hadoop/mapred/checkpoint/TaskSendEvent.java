@@ -47,11 +47,13 @@ public class TaskSendEvent
          * reached MAX attempts. When a reducer receives a TIPFAILED event it
          * gives up trying to shuffle data from that map task.
          */
-        TIPFAILED
+        TIPFAILED,
+        //heshulin
+        SENDED
     }
 
-    public static final org.apache.hadoop.mapred.TaskCompletionEvent[] EMPTY_ARRAY =
-            new org.apache.hadoop.mapred.TaskCompletionEvent[0];
+    public static final org.apache.hadoop.mapred.checkpoint.TaskSendEvent[] EMPTY_ARRAY =
+            new org.apache.hadoop.mapred.checkpoint.TaskSendEvent[0];
     /**
      * Default constructor for Writable.
      *
@@ -73,18 +75,18 @@ public class TaskSendEvent
                                TaskAttemptID taskId,
                                int idWithinJob,
                                boolean isMap,
-                               org.apache.hadoop.mapred.TaskCompletionEvent.Status status,
+                               org.apache.hadoop.mapred.checkpoint.TaskSendEvent.Status status,
                                String taskTrackerHttp){
         super(eventId, taskId, idWithinJob, isMap, org.apache.hadoop.mapreduce.
                 TaskCompletionEvent.Status.valueOf(status.name()), taskTrackerHttp);
     }
 
     @Private
-    public static org.apache.hadoop.mapred.TaskCompletionEvent downgrade(
+    public static org.apache.hadoop.mapred.checkpoint.TaskSendEvent downgrade(
             org.apache.hadoop.mapreduce.TaskCompletionEvent event) {
-        return new org.apache.hadoop.mapred.TaskCompletionEvent(event.getEventId(),
+        return new org.apache.hadoop.mapred.checkpoint.TaskSendEvent(event.getEventId(),
                 TaskAttemptID.downgrade(event.getTaskAttemptId()),event.idWithinJob(),
-                event.isMapTask(), org.apache.hadoop.mapred.TaskCompletionEvent.Status.valueOf(event.getStatus().name()),
+                event.isMapTask(), org.apache.hadoop.mapred.checkpoint.TaskSendEvent.Status.valueOf(event.getStatus().name()),
                 event.getTaskTrackerHttp());
     }
     /**
@@ -106,11 +108,11 @@ public class TaskSendEvent
     }
 
     /**
-     * Returns {@link org.apache.hadoop.mapred.TaskCompletionEvent.Status}
+     * Returns {@link org.apache.hadoop.mapred.checkpoint.TaskSendEvent.Status}
      * @return task completion status
      */
-    public org.apache.hadoop.mapred.TaskCompletionEvent.Status getTaskStatus() {
-        return org.apache.hadoop.mapred.TaskCompletionEvent.Status.valueOf(super.getStatus().name());
+    public org.apache.hadoop.mapred.checkpoint.TaskSendEvent.Status getTaskStatus() {
+        return org.apache.hadoop.mapred.checkpoint.TaskSendEvent.Status.valueOf(super.getStatus().name());
     }
 
     /**
@@ -146,7 +148,7 @@ public class TaskSendEvent
      * @param status
      */
     @Private
-    public void setTaskStatus(org.apache.hadoop.mapred.TaskCompletionEvent.Status status) {
+    public void setTaskStatus(org.apache.hadoop.mapred.checkpoint.TaskSendEvent.Status status) {
         super.setTaskStatus(org.apache.hadoop.mapreduce.
                 TaskCompletionEvent.Status.valueOf(status.name()));
     }

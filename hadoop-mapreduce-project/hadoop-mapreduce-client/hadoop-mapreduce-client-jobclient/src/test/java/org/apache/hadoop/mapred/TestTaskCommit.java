@@ -127,6 +127,11 @@ public class TestTaskCommit extends HadoopTestCase {
     }
 
     @Override
+    public void sendDataEvent(TaskAttemptID taskAttemptID) throws IOException {
+
+    }
+
+    @Override
     public JvmTask getTask(JvmContext context) throws IOException {
       return null;
     }

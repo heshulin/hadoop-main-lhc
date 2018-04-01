@@ -509,6 +509,12 @@ public class LocalContainerLauncher extends AbstractService implements
         TypeConverter.fromYarn(mapId).getTaskID(), mStatus.getLen());
     Path mapOutIndex = subMapOutputFile.getOutputIndexFile();
     Path reduceInIndex = new Path(reduceIn.toString() + ".index");
+    LOG.info("shxy : Renaming map output file for task attempt "
+            + mapId.toString() + " from original location " + mapOut.toString()
+            + " to destination " + reduceIn.toString());
+    System.out.println("shxy : Renaming map output file for task attempt "
+            + mapId.toString() + " from original location " + mapOut.toString()
+            + " to destination " + reduceIn.toString());
     if (LOG.isDebugEnabled()) {
       LOG.debug("Renaming map output file for task attempt "
           + mapId.toString() + " from original location " + mapOut.toString()

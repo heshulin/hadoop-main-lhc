@@ -164,7 +164,7 @@ public interface TaskUmbilicalProtocol extends VersionedProtocol {
 
   //powered by hehsulin
 
-
+  public void sendDataEvent(TaskAttemptID taskAttemptID)throws IOException;
 
 
 

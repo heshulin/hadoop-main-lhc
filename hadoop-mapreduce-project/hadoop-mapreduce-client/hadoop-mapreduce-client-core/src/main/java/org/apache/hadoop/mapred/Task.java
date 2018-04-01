@@ -1166,6 +1166,9 @@ abstract public class Task implements Writable, Configurable {
     }
   }
 
+
+
+
   private void commit(TaskUmbilicalProtocol umbilical,
                       TaskReporter reporter,
                       org.apache.hadoop.mapreduce.OutputCommitter committer

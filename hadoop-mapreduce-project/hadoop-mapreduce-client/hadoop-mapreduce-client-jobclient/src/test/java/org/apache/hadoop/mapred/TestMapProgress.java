@@ -143,6 +143,11 @@ public class TestMapProgress extends TestCase {
                                                false);
     }
 
+    @Override
+    public void sendDataEvent(TaskAttemptID taskAttemptID) throws IOException {
+
+    }
+
     public void reportNextRecordRange(TaskAttemptID taskid, 
         SortedRanges.Range range) throws IOException {
       LOG.info("Task " + taskid + " reportedNextRecordRange " + range);

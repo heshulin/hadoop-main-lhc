@@ -148,5 +148,44 @@ class EventFetcher<K,V> extends Thread {
 
     return numNewMaps;
   }
+  //heshulin
+  protected int  getMapSendedEvents()
+          throws IOException, InterruptedException {
+
+    int numSendMaps = 0;
+    TaskCompletionEvent events[] = null;
+
+    do {
+      MapTaskCompletionEventsUpdate update =
+              umbilical.getMapCompletionEvents(
+                      (org.apache.hadoop.mapred.JobID)reduce.getJobID(),
+                      fromEventIdx,
+                      maxEventsToFetch,
+                      (org.apache.hadoop.mapred.TaskAttemptID)reduce);
+      events = update.getMapTaskCompletionEvents();
+      LOG.debug("Got " + events.length + " map completion events from " +
+              fromEventIdx);
+
+      assert !update.shouldReset() : "Unexpected legacy state";
+
+      // Update the last seen event ID
+      fromEventIdx += events.length;
+
+      // Process the TaskCompletionEvents:
+      // 1. Save the SUCCEEDED maps in knownOutputs to fetch the outputs.
+      // 2. Save the OBSOLETE/FAILED/KILLED maps in obsoleteOutputs to stop
+      //    fetching from those maps.
+      // 3. Remove TIPFAILED maps from neededOutputs since we don't need their
+      //    outputs at all.
+      for (TaskCompletionEvent event : events) {
+        scheduler.resolve(event);
+        if (TaskCompletionEvent.Status.SUCCEEDED == event.getTaskStatus()) {
+          ++numSendMaps;
+        }
+      }
+    } while (events.length == maxEventsToFetch);
+
+    return numSendMaps;
+  }
 
 }

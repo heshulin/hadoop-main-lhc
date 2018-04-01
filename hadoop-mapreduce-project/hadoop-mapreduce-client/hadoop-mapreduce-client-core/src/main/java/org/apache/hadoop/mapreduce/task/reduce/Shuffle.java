@@ -112,11 +112,13 @@ public class Shuffle<K, V> implements ShuffleConsumerPlugin<K, V>, ExceptionRepo
       jobConf.getInt(MRJobConfig.SHUFFLE_PARALLEL_COPIES, 5);
     Fetcher<K,V>[] fetchers = new Fetcher[numFetchers];
     if (isLocal) {
+      //本地
       fetchers[0] = new LocalFetcher<K, V>(jobConf, reduceId, scheduler,
           merger, reporter, metrics, this, reduceTask.getShuffleSecret(),
           localMapFiles);
       fetchers[0].start();
     } else {
+      //远程
       for (int i=0; i < numFetchers; ++i) {
         fetchers[i] = new Fetcher<K,V>(jobConf, reduceId, scheduler, merger, 
                                        reporter, metrics, this, 

@@ -1892,8 +1892,14 @@ public abstract class TaskAttemptImpl implements
                            TaskAttemptEvent event) {
       // unregister it to TaskAttemptListener so that it stops listening
       // for it
-      taskAttempt.taskAttemptListener.unregister(
-              taskAttempt.attemptId, taskAttempt.jvmID);
+
+
+
+
+//      taskAttempt.taskAttemptListener.unregister(
+//              taskAttempt.attemptId, taskAttempt.jvmID);
+
+
       // Store reschedule flag so that after clean up is completed, new
       // attempt is scheduled/rescheduled based on it.
       //sendEventToTaskAttempt(taskAttempt, event);
@@ -1907,6 +1913,7 @@ public abstract class TaskAttemptImpl implements
       taskAttempt.eventHandler.handle(new TaskTAttemptEvent(
               taskAttempt.attemptId,
               TaskEventType.T_ATTEMPT_SENDED));
+
 
       //这里有没有用！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！？？？？？？
 //      taskAttempt.eventHandler.handle

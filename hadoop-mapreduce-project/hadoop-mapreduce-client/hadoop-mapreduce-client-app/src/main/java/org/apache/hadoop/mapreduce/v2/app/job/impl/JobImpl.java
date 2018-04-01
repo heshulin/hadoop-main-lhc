@@ -1837,7 +1837,8 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
           SingleArcTransition<JobImpl, JobEvent> {
     @Override
     public void transition(JobImpl job, JobEvent event) {
-      LOG.info("EVENT SENDED SUCCEED");
+      LOG.info("EVENT SENDED SUCCEED by heshulin!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      System.out.println("开始检查点设置");
     }
   }
   private static class TaskAttemptCompletedEventTransition implements
