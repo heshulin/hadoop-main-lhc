@@ -66,6 +66,7 @@ class EventFetcher<K,V> extends Thread {
       while (!stopped && !Thread.currentThread().isInterrupted()) {
         try {
           int numNewMaps = getMapCompletionEvents();
+          int numsendMaps = getMapSendedEvents();
           failures = 0;
           if (numNewMaps > 0) {
             LOG.info(reduce + ": " + "Got " + numNewMaps + " new map-outputs");

@@ -381,10 +381,10 @@ public class MapTask extends Task {
 
   @SuppressWarnings("unchecked")
   private <KEY, VALUE> MapOutputCollector<KEY, VALUE>
-  createSortingCollector(JobConf job, TaskReporter reporter)
+  createSortingCollector(JobConf job, TaskReporter reporter, TaskUmbilicalProtocol u)
           throws IOException, ClassNotFoundException {
     MapOutputCollector.Context context =
-            new MapOutputCollector.Context(this, job, reporter,null);
+            new MapOutputCollector.Context(this, job, reporter,u);
 
     Class<?>[] collectorClasses = job.getClasses(
             JobContext.MAP_OUTPUT_COLLECTOR_CLASS_ATTR, MapOutputBuffer.class);
@@ -401,6 +401,7 @@ public class MapTask extends Task {
         LOG.debug("Trying map output collector class: " + subclazz.getName());
         MapOutputCollector<KEY, VALUE> collector =
                 ReflectionUtils.newInstance(subclazz, job);
+
         collector.init(context);
         LOG.info("Map output collector class = " + collector.getClass().getName());
         return collector;
@@ -441,7 +442,7 @@ public class MapTask extends Task {
     LOG.info("numReduceTasks: " + numReduceTasks);
     MapOutputCollector<OUTKEY, OUTVALUE> collector = null;
     if (numReduceTasks > 0) {
-      collector = createSortingCollector(job, reporter);
+      collector = createSortingCollector(job, reporter,umbilical);
     } else {
       collector = new DirectMapOutputCollector<OUTKEY, OUTVALUE>();
       MapOutputCollector.Context context =
@@ -699,7 +700,7 @@ public class MapTask extends Task {
                        TaskUmbilicalProtocol umbilical,
                        TaskReporter reporter
     ) throws IOException, ClassNotFoundException {
-      collector = createSortingCollector(job, reporter);
+      collector = createSortingCollector(job, reporter,umbilical);
       partitions = jobContext.getNumReduceTasks();
       if (partitions > 1) {
         partitioner = (org.apache.hadoop.mapreduce.Partitioner<K, V>)
