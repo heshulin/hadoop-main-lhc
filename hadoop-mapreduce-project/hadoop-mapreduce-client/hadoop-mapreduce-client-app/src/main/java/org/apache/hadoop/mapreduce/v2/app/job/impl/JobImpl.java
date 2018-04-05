@@ -72,17 +72,7 @@ import org.apache.hadoop.mapreduce.security.token.JobTokenSecretManager;
 import org.apache.hadoop.mapreduce.split.JobSplit.TaskSplitMetaInfo;
 import org.apache.hadoop.mapreduce.split.SplitMetaInfoReader;
 import org.apache.hadoop.mapreduce.task.JobContextImpl;
-import org.apache.hadoop.mapreduce.v2.api.records.AMInfo;
-import org.apache.hadoop.mapreduce.v2.api.records.JobId;
-import org.apache.hadoop.mapreduce.v2.api.records.JobReport;
-import org.apache.hadoop.mapreduce.v2.api.records.JobState;
-import org.apache.hadoop.mapreduce.v2.api.records.Phase;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptCompletionEvent;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptCompletionEventStatus;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskId;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskState;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskType;
+import org.apache.hadoop.mapreduce.v2.api.records.*;
 import org.apache.hadoop.mapreduce.v2.app.AppContext;
 import org.apache.hadoop.mapreduce.v2.app.TaskAttemptListener;
 import org.apache.hadoop.mapreduce.v2.app.commit.CommitterJobAbortEvent;
@@ -202,6 +192,7 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
   private int allowedMapFailuresPercent = 0;
   private int allowedReduceFailuresPercent = 0;
   private List<TaskAttemptCompletionEvent> taskAttemptCompletionEvents;
+  private List<TaskAttemptSendEvent> taskAttemptSendEvents;
   private List<TaskCompletionEvent> mapAttemptCompletionEvents;
   //heshulin
   private List<TaskSendEvent> mapAttemptSendEvents;
@@ -1481,6 +1472,9 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
         job.taskAttemptCompletionEvents =
             new ArrayList<TaskAttemptCompletionEvent>(
                 job.numMapTasks + job.numReduceTasks + 10);
+        job.taskAttemptSendEvents =
+                new ArrayList<TaskAttemptSendEvent>(
+                        job.numMapTasks + job.numReduceTasks + 10);
         job.mapAttemptCompletionEvents =
             new ArrayList<TaskCompletionEvent>(job.numMapTasks + 10);
         //heshulin
@@ -1849,9 +1843,30 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
     @Override
     public void transition(JobImpl job, JobEvent event) {
       LOG.info("EVENT SENDED SUCCEED by heshulin!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      System.out.println("开始检查点设置");
-      job.mapAttemptSendEvents.add(new TaskSendEvent());
-    }
+      LOG.info("抛出事件成功");
+      //job.mapAttemptSendEvents.add(new TaskSendEvent());
+
+
+
+
+      //第二个版本
+      TaskAttemptSendEvent tce =
+              ((JobTaskAttemptSendedEvent) event).getSendEvent();
+      // Add the TaskAttemptCompletionEvent
+      //eventId is equal to index in the arraylist
+      tce.setEventId(job.taskAttemptSendEvents.size());
+      job.taskAttemptSendEvents.add(tce);
+      int mapEventIdx = -1;
+      if (TaskType.MAP.equals(tce.getAttemptId().getTaskId().getTaskType())) {
+        // we track map completions separately from task completions because
+        // - getMapAttemptCompletionEvents uses index ranges specific to maps
+        // - type converting the same events over and over is expensive
+        mapEventIdx = job.mapAttemptSendEvents.size();
+        job.mapAttemptSendEvents.add(TypeConverter.fromYarn(tce));
+      }
+
+
+
   }
   private static class TaskAttemptCompletedEventTransition implements
       SingleArcTransition<JobImpl, JobEvent> {

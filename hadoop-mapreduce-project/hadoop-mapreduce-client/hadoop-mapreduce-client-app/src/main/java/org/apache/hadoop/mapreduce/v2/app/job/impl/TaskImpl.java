@@ -47,36 +47,13 @@ import org.apache.hadoop.mapreduce.jobhistory.TaskFailedEvent;
 import org.apache.hadoop.mapreduce.jobhistory.TaskFinishedEvent;
 import org.apache.hadoop.mapreduce.jobhistory.TaskStartedEvent;
 import org.apache.hadoop.mapreduce.security.token.JobTokenIdentifier;
-import org.apache.hadoop.mapreduce.v2.api.records.Avataar;
-import org.apache.hadoop.mapreduce.v2.api.records.JobId;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptCompletionEvent;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptCompletionEventStatus;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptState;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskId;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskReport;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskState;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskType;
+import org.apache.hadoop.mapreduce.v2.api.records.*;
 import org.apache.hadoop.mapreduce.v2.app.AppContext;
 import org.apache.hadoop.mapreduce.v2.app.TaskAttemptListener;
 import org.apache.hadoop.mapreduce.v2.app.job.Task;
 import org.apache.hadoop.mapreduce.v2.app.job.TaskAttempt;
 import org.apache.hadoop.mapreduce.v2.app.job.TaskStateInternal;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobDiagnosticsUpdateEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobEventType;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobMapTaskRescheduledEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobTaskAttemptCompletedEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.JobTaskEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskAttemptEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskAttemptKillEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskAttemptEventType;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskAttemptRecoverEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskEventType;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskRecoverEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskTAttemptEvent;
-import org.apache.hadoop.mapreduce.v2.app.job.event.TaskTAttemptKilledEvent;
+import org.apache.hadoop.mapreduce.v2.app.job.event.*;
 import org.apache.hadoop.mapreduce.v2.app.metrics.MRAppMetrics;
 import org.apache.hadoop.mapreduce.v2.app.rm.ContainerFailedEvent;
 import org.apache.hadoop.mapreduce.v2.util.MRBuilderUtils;
@@ -988,11 +965,40 @@ public abstract class TaskImpl implements Task, EventHandler<TaskEvent> {
               taskAttemptId,
               TaskAttemptCompletionEventStatus.SENDED);
       System.out.println("task shijian 何树林！！！！！！！！！！！！！！！！！！");
+      LOG.info("task shijian 何树林！！！！！！！！！！！！！！！！！！");
     }
   }
   private void handleTaskAttemptSend(TaskAttemptId attemptId,
                                      TaskAttemptCompletionEventStatus status) {
-    eventHandler.handle(new JobEvent(this.taskId.getJobId(),JobEventType.JOB_SENDED));
+    System.out.println("何树林：抛出job级别事件");
+   // eventHandler.handle(new JobEvent(this.taskId.getJobId(),JobEventType.JOB_SENDED));
+
+
+
+
+
+    //第二个版本的event
+    TaskAttempt attempt = attempts.get(attemptId);
+    //raise the completion event only if the container is assigned
+    // to nextAttemptNumber
+    if (attempt.getNodeHttpAddress() != null) {
+      TaskAttemptSendEvent tce = recordFactory
+              .newRecordInstance(TaskAttemptSendEvent.class);
+      tce.setEventId(-1);
+      String scheme = (encryptedShuffle) ? "https://" : "http://";
+      tce.setMapOutputServerAddress(StringInterner.weakIntern(scheme
+              + attempt.getNodeHttpAddress().split(":")[0] + ":"
+              + attempt.getShufflePort()));
+      tce.setStatus(status);
+      tce.setAttemptId(attempt.getID());
+      int runTime = 0;
+      if (attempt.getFinishTime() != 0 && attempt.getLaunchTime() !=0)
+        runTime = (int)(attempt.getFinishTime() - attempt.getLaunchTime());
+      tce.setAttemptRunTime(runTime);
+
+      //raise the event to job so that it adds the completion event to its
+      //data structures
+      eventHandler.handle(new JobTaskAttemptSendedEvent(tce));
   }
 
 

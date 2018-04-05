@@ -32,9 +32,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.ipc.ProtocolSignature;
 import org.apache.hadoop.mapred.checkpoint.MapTaskSendEventsUpdate;
+import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.jobhistory.JobSubmittedEvent;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
@@ -44,6 +44,8 @@ import org.apache.hadoop.mapreduce.split.SplitMetaInfoReader;
 import org.apache.hadoop.mapreduce.split.JobSplit.SplitMetaInfo;
 import org.apache.hadoop.mapreduce.split.JobSplit.TaskSplitIndex;
 import org.apache.hadoop.mapreduce.split.JobSplit.TaskSplitMetaInfo;
+import org.apache.hadoop.mapreduce.v2.app.job.event.TaskAttemptEvent;
+import org.apache.hadoop.mapreduce.v2.app.job.event.TaskAttemptEventType;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -146,6 +148,8 @@ public class TestMapProgress extends TestCase {
 
     @Override
     public void sendDataEvent(TaskAttemptID taskAttemptID) throws IOException {
+
+      System.out.println("发送事件testMapprogress");
 
     }
 

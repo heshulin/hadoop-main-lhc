@@ -235,8 +235,10 @@ public class TaskAttemptListenerImpl extends CompositeService
   //powered by heshulin
   @Override
   public void sendDataEvent(TaskAttemptID taskAttemptID)throws IOException {
+    System.out.println("发送事件attemptlistenerimpl");
+    LOG.info("发送事件attemptlistenerimpl");
     LOG.info("Done acknowledgement from " + taskAttemptID.toString());
-      System.out.println("taskattmptshijian 何树林!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
     org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID =
             TypeConverter.toYarn(taskAttemptID);
     taskHeartbeatHandler.progressing(attemptID);
@@ -249,19 +251,25 @@ public class TaskAttemptListenerImpl extends CompositeService
   public MapTaskSendEventsUpdate getMapSendEvents(
           JobID jobIdentifier, int startIndex, int maxEvents,
           TaskAttemptID taskAttemptID) throws IOException {
-    LOG.info("MapCompletionEvents request from " + taskAttemptID.toString()
+    LOG.info("MapSendEvents request from " + taskAttemptID.toString()
             + ". startIndex " + startIndex + " maxEvents " + maxEvents);
-
+    System.out.println("taskattemptlistenerimpl調試信息1");
+    LOG.info("taskattemptlistenerimpl調試信息1");
     // TODO: shouldReset is never used. See TT. Ask for Removal.
     boolean shouldReset = false;
+
     org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID =
             TypeConverter.toYarn(taskAttemptID);
+    System.out.println("taskattemptlistenerimpl調試信息2");
+    LOG.info("taskattemptlistenerimpl調試信息2");
     TaskSendEvent[] events =
             context.getJob(attemptID.getTaskId().getJobId()).getMapAttemptSendEvents(
                     startIndex, maxEvents);
-
+    System.out.println("taskattemptlistenerimpl調試信息3");
+    LOG.info("taskattemptlistenerimpl調試信息3");
     taskHeartbeatHandler.progressing(attemptID);
-
+    System.out.println("taskattemptlistenerimpl調試信息4");
+    LOG.info("taskattemptlistenerimpl調試信息4");
     return new MapTaskSendEventsUpdate(events, shouldReset);
   }
 
@@ -269,7 +277,7 @@ public class TaskAttemptListenerImpl extends CompositeService
   @Override
   public void done(TaskAttemptID taskAttemptID) throws IOException {
     LOG.info("Done acknowledgement from " + taskAttemptID.toString());
-
+    LOG.info("发送事件attemptlistenerimpl本体");
     org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID =
         TypeConverter.toYarn(taskAttemptID);
 
@@ -317,17 +325,18 @@ public class TaskAttemptListenerImpl extends CompositeService
       TaskAttemptID taskAttemptID) throws IOException {
     LOG.info("MapCompletionEvents request from " + taskAttemptID.toString()
         + ". startIndex " + startIndex + " maxEvents " + maxEvents);
-
+    System.out.println("taskattemptlistenerimpl調試信息1com");
     // TODO: shouldReset is never used. See TT. Ask for Removal.
     boolean shouldReset = false;
     org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID =
       TypeConverter.toYarn(taskAttemptID);
+    System.out.println("taskattemptlistenerimpl調試信息2com");
     TaskCompletionEvent[] events =
         context.getJob(attemptID.getTaskId().getJobId()).getMapAttemptCompletionEvents(
             startIndex, maxEvents);
-
+    System.out.println("taskattemptlistenerimpl調試信息3com");
     taskHeartbeatHandler.progressing(attemptID);
-    
+    System.out.println("taskattemptlistenerimpl調試信息4com");
     return new MapTaskCompletionEventsUpdate(events, shouldReset);
   }
 

@@ -338,10 +338,16 @@ public class MapTask extends Task {
     }
     //sendSend(umbilical);
     if (useNewApi) {
+      System.out.println("新事前："+umbilical.getClass().getName());
+      LOG.info("新事前："+umbilical.getClass().getName());
       runNewMapper(job, splitMetaInfo, umbilical, reporter);
     } else {
+      System.out.println("旧事前："+umbilical.getClass().getName());
+      LOG.info("旧事前："+umbilical.getClass().getName());
       runOldMapper(job, splitMetaInfo, umbilical, reporter);
     }
+    LOG.info("事后："+umbilical.getClass().getName());
+    System.out.println("事后："+umbilical.getClass().getName());
     //sendSend(umbilical);
     done(umbilical, reporter);
 
@@ -1598,7 +1604,7 @@ public class MapTask extends Task {
       while (true) {
         try {
           umbilical.sendDataEvent(getTaskID());
-          System.out.println("开始检查点设置");
+          System.out.println("事件发送成功");
           LOG.info("Task '" + mapTask.getTaskID() + "' send byheshulin.");
           return;
         } catch (IOException ie) {

@@ -129,7 +129,7 @@ public class TestTaskCommit extends HadoopTestCase {
 
     @Override
     public void sendDataEvent(TaskAttemptID taskAttemptID) throws IOException {
-
+      System.out.println("发送事件testtaskcommit");
     }
 
     @Override

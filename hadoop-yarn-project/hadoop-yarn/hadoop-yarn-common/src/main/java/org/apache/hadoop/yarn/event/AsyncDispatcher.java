@@ -249,6 +249,10 @@ public class AsyncDispatcher extends AbstractService implements Dispatcher {
       }
       try {
         eventQueue.put(event);
+        for(Event e:eventQueue)
+        {
+          System.out.println("何树林："+e.getType());
+        }
       } catch (InterruptedException e) {
         if (!stopped) {
           LOG.warn("AsyncDispatcher thread interrupted", e);

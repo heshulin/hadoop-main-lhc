@@ -25,20 +25,12 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobPriority;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
+import org.apache.hadoop.mapred.checkpoint.TaskSendEvent;
 import org.apache.hadoop.mapreduce.JobStatus.State;
+import org.apache.hadoop.mapreduce.v2.api.records.*;
 import org.apache.hadoop.mapreduce.v2.api.records.Counter;
 import org.apache.hadoop.mapreduce.v2.api.records.CounterGroup;
 import org.apache.hadoop.mapreduce.v2.api.records.Counters;
-import org.apache.hadoop.mapreduce.v2.api.records.JobId;
-import org.apache.hadoop.mapreduce.v2.api.records.JobReport;
-import org.apache.hadoop.mapreduce.v2.api.records.JobState;
-import org.apache.hadoop.mapreduce.v2.api.records.Phase;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptCompletionEvent;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptCompletionEventStatus;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptState;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskId;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskState;
 import org.apache.hadoop.mapreduce.v2.api.records.TaskType;
 import org.apache.hadoop.mapreduce.v2.util.MRApps;
 import org.apache.hadoop.util.StringUtils;
@@ -190,6 +182,15 @@ public class TypeConverter {
               newEvent.getMapOutputServerAddress());
   }
 
+  public static TaskSendEvent fromYarn(
+          TaskAttemptSendEvent newEvent) {
+    return new TaskSendEvent(newEvent.getEventId(),
+            fromYarn(newEvent.getAttemptId()), newEvent.getAttemptId().getId(),
+            newEvent.getAttemptId().getTaskId().getTaskType().equals(TaskType.MAP),
+            fromYarn(newEvent.getStatus()),
+            newEvent.getMapOutputServerAddress());
+  }
+
   public static TaskCompletionEvent.Status fromYarn(
       TaskAttemptCompletionEventStatus newStatus) {
     switch (newStatus) {
@@ -203,6 +204,23 @@ public class TypeConverter {
       return TaskCompletionEvent.Status.SUCCEEDED;
     case TIPFAILED:
       return TaskCompletionEvent.Status.TIPFAILED;
+    }
+    throw new YarnRuntimeException("Unrecognized status: " + newStatus);
+  }
+
+  public static TaskSendEvent.Status fromYarn(
+          TaskAttemptSendEventStatus newStatus) {
+    switch (newStatus) {
+      case FAILED:
+        return TaskSendEvent.Status.FAILED;
+      case KILLED:
+        return TaskSendEvent.Status.KILLED;
+      case OBSOLETE:
+        return TaskSendEvent.Status.OBSOLETE;
+      case SUCCEEDED:
+        return TaskSendEvent.Status.SUCCEEDED;
+      case TIPFAILED:
+        return TaskSendEvent.Status.TIPFAILED;
     }
     throw new YarnRuntimeException("Unrecognized status: " + newStatus);
   }
