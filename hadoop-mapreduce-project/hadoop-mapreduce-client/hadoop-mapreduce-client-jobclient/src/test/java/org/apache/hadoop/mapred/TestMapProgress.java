@@ -155,6 +155,7 @@ public class TestMapProgress extends TestCase {
 
     @Override
     public MapTaskSendEventsUpdate getMapSendEvents(JobID jobId, int fromIndex, int maxLocs, TaskAttemptID id) throws IOException {
+      System.out.println("没想到吧");
       return null;
     }
 

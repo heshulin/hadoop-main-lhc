@@ -1847,13 +1847,11 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
       //job.mapAttemptSendEvents.add(new TaskSendEvent());
 
 
-
-
       //第二个版本
       TaskAttemptSendEvent tce =
               ((JobTaskAttemptSendedEvent) event).getSendEvent();
       // Add the TaskAttemptCompletionEvent
-      //eventId is equal to index in the arraylist
+      //eventId is equal to in dex in the arraylist
       tce.setEventId(job.taskAttemptSendEvents.size());
       job.taskAttemptSendEvents.add(tce);
       int mapEventIdx = -1;
@@ -1866,7 +1864,7 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
       }
 
 
-
+    }
   }
   private static class TaskAttemptCompletedEventTransition implements
       SingleArcTransition<JobImpl, JobEvent> {

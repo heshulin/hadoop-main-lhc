@@ -963,18 +963,15 @@ public abstract class TaskImpl implements Task, EventHandler<TaskEvent> {
       TaskAttemptId taskAttemptId = taskTAttemptEvent.getTaskAttemptID();
       task.handleTaskAttemptSend(
               taskAttemptId,
-              TaskAttemptCompletionEventStatus.SENDED);
+              TaskAttemptSendEventStatus.SENDED);
       System.out.println("task shijian 何树林！！！！！！！！！！！！！！！！！！");
       LOG.info("task shijian 何树林！！！！！！！！！！！！！！！！！！");
     }
   }
   private void handleTaskAttemptSend(TaskAttemptId attemptId,
-                                     TaskAttemptCompletionEventStatus status) {
+                                     TaskAttemptSendEventStatus status) {
     System.out.println("何树林：抛出job级别事件");
-   // eventHandler.handle(new JobEvent(this.taskId.getJobId(),JobEventType.JOB_SENDED));
-
-
-
+    // eventHandler.handle(new JobEvent(this.taskId.getJobId(),JobEventType.JOB_SENDED));
 
 
     //第二个版本的event
@@ -992,16 +989,16 @@ public abstract class TaskImpl implements Task, EventHandler<TaskEvent> {
       tce.setStatus(status);
       tce.setAttemptId(attempt.getID());
       int runTime = 0;
-      if (attempt.getFinishTime() != 0 && attempt.getLaunchTime() !=0)
-        runTime = (int)(attempt.getFinishTime() - attempt.getLaunchTime());
+      if (attempt.getFinishTime() != 0 && attempt.getLaunchTime() != 0)
+        runTime = (int) (attempt.getFinishTime() - attempt.getLaunchTime());
       tce.setAttemptRunTime(runTime);
 
       //raise the event to job so that it adds the completion event to its
       //data structures
       eventHandler.handle(new JobTaskAttemptSendedEvent(tce));
+    }
+
   }
-
-
 
   private static class AttemptKilledTransition implements
       SingleArcTransition<TaskImpl, TaskEvent> {

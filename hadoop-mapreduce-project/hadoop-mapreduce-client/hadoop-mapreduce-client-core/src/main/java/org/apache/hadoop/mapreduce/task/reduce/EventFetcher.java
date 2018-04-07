@@ -38,6 +38,7 @@ class EventFetcher<K,V> extends Thread {
   private final TaskUmbilicalProtocol umbilical;
   private final ShuffleScheduler<K,V> scheduler;
   private int fromEventIdx = 0;
+  private int fromEventIdxSend = 0;
   private final int maxEventsToFetch;
   private final ExceptionReporter exceptionReporter;
   
@@ -65,8 +66,9 @@ class EventFetcher<K,V> extends Thread {
     try {
       while (!stopped && !Thread.currentThread().isInterrupted()) {
         try {
-          int numsendMaps = getMapSendedEvents();
           int numNewMaps = getMapCompletionEvents();
+          //int numsendMaps = getMapSendedEvents();
+
 
           failures = 0;
           if (numNewMaps > 0) {
@@ -171,24 +173,38 @@ class EventFetcher<K,V> extends Thread {
       System.out.println("调试信息3");
       LOG.info("reduce中umbilical类型："+umbilical.getClass().getName());
       System.out.println("reduce中umbilical类型："+umbilical.getClass().getName());
-      MapTaskSendEventsUpdate update =
-              umbilical.getMapSendEvents(
-                      (org.apache.hadoop.mapred.JobID)reduce.getJobID(),
-                      fromEventIdx,
-                      maxEventsToFetch,
-                      (org.apache.hadoop.mapred.TaskAttemptID)reduce);
+      MapTaskSendEventsUpdate update=null;
+//      try{
+        System.out.println("在这");
+        LOG.info("在这");
+         update =
+                umbilical.getMapSendEvents(
+                        (org.apache.hadoop.mapred.JobID)reduce.getJobID(),
+                        fromEventIdxSend,
+                        maxEventsToFetch,
+                        (org.apache.hadoop.mapred.TaskAttemptID)reduce);
+
+        System.out.println("结束");
+        LOG.info("结束");
+//      }catch (Exception e)
+//      {
+        System.out.println("ef error_何树林");
+        LOG.info("ef error_何树林");
+//      }
+
+
       System.out.println("调试信息4");
       events = update.getMapTaskSendEvents();
       System.out.println("调试信息5");
       System.out.println("何树林：sendsize"+events.length);
       LOG.info("何树林：sendsize"+events.length);
       LOG.debug("Got " + events.length + " map completion events from " +
-              fromEventIdx);
+              fromEventIdxSend);
 
       assert !update.shouldReset() : "Unexpected legacy state";
 
       // Update the last seen event ID
-      fromEventIdx += events.length;
+      fromEventIdxSend += events.length;
 
       // Process the TaskCompletionEvents:
       // 1. Save the SUCCEEDED maps in knownOutputs to fetch the outputs.
