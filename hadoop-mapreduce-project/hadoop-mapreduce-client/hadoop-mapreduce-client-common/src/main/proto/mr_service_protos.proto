@@ -62,6 +62,15 @@ message GetTaskAttemptCompletionEventsRequestProto {
 message GetTaskAttemptCompletionEventsResponseProto {
   repeated TaskAttemptCompletionEventProto completion_events = 1;
 }
+//何树林
+message GetTaskAttemptSendEventsRequestProto {
+  optional JobIdProto job_id = 1;
+  optional int32 from_event_id = 2;
+  optional int32 max_events = 3;
+}
+message GetTaskAttemptSendEventsResponseProto {
+  repeated TaskAttemptCompletionEventProto completion_events = 1;
+}
 
 message GetTaskReportsRequestProto {
   optional JobIdProto job_id = 1;

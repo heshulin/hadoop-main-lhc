@@ -164,10 +164,27 @@ enum TaskAttemptCompletionEventStatusProto {
   TACE_OBSOLETE = 4;
   TACE_TIPFAILED = 5;
 }
+//何树林
+enum TaskAttemptSendEventStatusProto {
+  TACE_FAILED = 1;
+  TACE_KILLED = 2;
+  TACE_SUCCEEDED = 3;
+  TACE_OBSOLETE = 4;
+  TACE_TIPFAILED = 5;
+  TACE_SENDED = 6;
+}
 
 message TaskAttemptCompletionEventProto {
   optional TaskAttemptIdProto attempt_id = 1;
   optional TaskAttemptCompletionEventStatusProto status = 2;
+  optional string map_output_server_address = 3;
+  optional int32 attempt_run_time = 4;
+  optional int32 event_id = 5;
+}
+//何树林
+message TaskAttemptSendEventProto {
+  optional TaskAttemptIdProto attempt_id = 1;
+  optional TaskAttemptSendEventStatusProto status = 2;
   optional string map_output_server_address = 3;
   optional int32 attempt_run_time = 4;
   optional int32 event_id = 5;
