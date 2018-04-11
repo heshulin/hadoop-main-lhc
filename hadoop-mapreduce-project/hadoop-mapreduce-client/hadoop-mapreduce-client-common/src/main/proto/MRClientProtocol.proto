@@ -31,6 +31,7 @@ service MRClientProtocolService {
   rpc getTaskAttemptReport (GetTaskAttemptReportRequestProto) returns (GetTaskAttemptReportResponseProto);
   rpc getCounters (GetCountersRequestProto) returns (GetCountersResponseProto);
   rpc getTaskAttemptCompletionEvents (GetTaskAttemptCompletionEventsRequestProto) returns (GetTaskAttemptCompletionEventsResponseProto);
+  rpc getTaskAttemptSendEvents (GetTaskAttemptSendEventsRequestProto) returns (GetTaskAttemptSendEventsResponseProto);//asda
   rpc getTaskReports (GetTaskReportsRequestProto) returns (GetTaskReportsResponseProto);
   rpc getDiagnostics (GetDiagnosticsRequestProto) returns (GetDiagnosticsResponseProto);
   rpc getDelegationToken (hadoop.common.GetDelegationTokenRequestProto) returns (hadoop.common.GetDelegationTokenResponseProto);

@@ -24,7 +24,7 @@ public interface TaskAttemptCompletionEvent {
   public abstract String getMapOutputServerAddress();
   public abstract int getAttemptRunTime();
   public abstract int getEventId();
-  
+
   public abstract void setAttemptId(TaskAttemptId taskAttemptId);
   public abstract void setStatus(TaskAttemptCompletionEventStatus status);
   public abstract void setMapOutputServerAddress(String address);

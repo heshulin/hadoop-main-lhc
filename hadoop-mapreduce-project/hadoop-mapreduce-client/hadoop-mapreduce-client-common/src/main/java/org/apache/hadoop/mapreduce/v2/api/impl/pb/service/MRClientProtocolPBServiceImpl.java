@@ -178,6 +178,20 @@ public class MRClientProtocolPBServiceImpl implements MRClientProtocolPB {
   }
 
   @Override
+  public GetTaskAttemptSendEventsResponseProto getTaskAttemptSendEvents(
+          RpcController controller,
+          GetTaskAttemptSendEventsRequestProto proto)
+          throws ServiceException {
+    GetTaskAttemptSendEventsRequest request = new GetTaskAttemptSendEventsRequestPBImpl(proto);
+    try {
+      GetTaskAttemptCompletionEventsResponse response = real.getTaskAttemptSendEvents(request);
+      return ((GetTaskAttemptSendEventsResponsePBImpl)response).getProto();
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
+  }
+
+  @Override
   public GetTaskReportsResponseProto getTaskReports(RpcController controller,
       GetTaskReportsRequestProto proto) throws ServiceException {
     GetTaskReportsRequest request = new GetTaskReportsRequestPBImpl(proto);

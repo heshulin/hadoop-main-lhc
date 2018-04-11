@@ -698,13 +698,12 @@ public class LocalJobRunner implements ClientProtocol {
         org.apache.hadoop.mapred.TaskCompletionEvent.EMPTY_ARRAY, false);
     }
 
-    @Override
     public void sendDataEvent(TaskAttemptID taskAttemptID) throws IOException {
       System.out.println("发送事件localjobrunner");
 
     }
 
-    @Override
+
     public MapTaskSendEventsUpdate getMapSendEvents(JobID jobId, int fromIndex, int maxLocs, TaskAttemptID id) throws IOException {
       System.out.println("没想到吧，走了我这里");
       return null;

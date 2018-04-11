@@ -166,12 +166,12 @@ enum TaskAttemptCompletionEventStatusProto {
 }
 //何树林
 enum TaskAttemptSendEventStatusProto {
-  TACE_FAILED = 1;
-  TACE_KILLED = 2;
-  TACE_SUCCEEDED = 3;
-  TACE_OBSOLETE = 4;
-  TACE_TIPFAILED = 5;
-  TACE_SENDED = 6;
+  TASE_FAILED = 1;
+  TASE_KILLED = 2;
+  TASE_SUCCEEDED = 3;
+  TASE_OBSOLETE = 4;
+  TASE_TIPFAILED = 5;
+  //TACE_SENDED = 6;
 }
 
 message TaskAttemptCompletionEventProto {

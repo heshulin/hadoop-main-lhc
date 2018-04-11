@@ -20,6 +20,7 @@ option java_package = "org.apache.hadoop.mapreduce.v2.proto";
 option java_outer_classname = "MRServiceProtos";
 option java_generic_services = true;
 option java_generate_equals_and_hash = true;
+
 package hadoop.mapreduce;
 
 import "Security.proto";
@@ -69,7 +70,7 @@ message GetTaskAttemptSendEventsRequestProto {
   optional int32 max_events = 3;
 }
 message GetTaskAttemptSendEventsResponseProto {
-  repeated TaskAttemptCompletionEventProto completion_events = 1;
+  repeated TaskAttemptSendEventProto send_events = 1;
 }
 
 message GetTaskReportsRequestProto {

@@ -25,6 +25,8 @@ import org.apache.hadoop.mapreduce.v2.proto.MRProtos.TaskAttemptCompletionEventS
 import org.apache.hadoop.mapreduce.v2.proto.MRProtos.TaskAttemptStateProto;
 import org.apache.hadoop.mapreduce.v2.proto.MRProtos.TaskStateProto;
 import org.apache.hadoop.mapreduce.v2.proto.MRProtos.TaskTypeProto;
+import org.apache.hadoop.mapreduce.v2.proto.MRProtos.TaskAttemptSendEventStatusProto;
+
 
 public class MRProtoUtils {
 
