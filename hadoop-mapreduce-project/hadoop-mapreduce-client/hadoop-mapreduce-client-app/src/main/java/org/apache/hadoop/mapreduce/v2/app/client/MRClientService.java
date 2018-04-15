@@ -32,7 +32,9 @@ import org.apache.hadoop.ipc.Server;
 import org.apache.hadoop.mapreduce.JobACL;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.mapreduce.TypeConverter;
+import org.apache.hadoop.mapreduce.v2.api.GetTaskAttemptSendEventsResponse;
 import org.apache.hadoop.mapreduce.v2.api.MRClientProtocol;
+import org.apache.hadoop.mapreduce.v2.api.impl.pb.service.GetTaskAttemptSendEventsRequest;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.CancelDelegationTokenRequest;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.CancelDelegationTokenResponse;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.FailTaskAttemptRequest;
@@ -284,7 +286,21 @@ public class MRClientService extends AbstractService implements ClientService {
           job.getTaskAttemptCompletionEvents(fromEventId, maxEvents)));
       return response;
     }
-    
+
+    @Override
+    public GetTaskAttemptSendEventsResponse getTaskAttemptSendEvents(GetTaskAttemptSendEventsRequest request) throws IOException {
+      JobId jobId = request.getJobId();
+      int fromEventId = request.getFromEventId();
+      int maxEvents = request.getMaxEvents();
+      Job job = verifyAndGetJob(jobId, JobACL.VIEW_JOB, true);
+
+      GetTaskAttemptSendEventsResponse response =
+              recordFactory.newRecordInstance(GetTaskAttemptSendEventsResponse.class);
+      response.addAllSendEvents(Arrays.asList(
+              job.getTaskAttemptSendEvents(fromEventId, maxEvents)));
+      return response;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public KillJobResponse killJob(KillJobRequest request) 

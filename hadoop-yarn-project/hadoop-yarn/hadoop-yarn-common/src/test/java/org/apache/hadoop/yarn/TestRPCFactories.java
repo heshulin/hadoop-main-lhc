@@ -40,9 +40,9 @@ import org.apache.hadoop.yarn.factories.impl.pb.RpcServerFactoryPBImpl;
 import org.junit.Test;
 
 public class TestRPCFactories {
-  
-  
-  
+
+
+
   @Test
   public void test() {
     testPbServerFactory();

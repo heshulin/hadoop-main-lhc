@@ -45,15 +45,7 @@ import org.apache.hadoop.mapreduce.TypeConverter;
 import org.apache.hadoop.mapreduce.jobhistory.JobHistoryParser;
 import org.apache.hadoop.mapreduce.jobhistory.JobHistoryParser.JobInfo;
 import org.apache.hadoop.mapreduce.jobhistory.JobHistoryParser.TaskInfo;
-import org.apache.hadoop.mapreduce.v2.api.records.AMInfo;
-import org.apache.hadoop.mapreduce.v2.api.records.JobId;
-import org.apache.hadoop.mapreduce.v2.api.records.JobReport;
-import org.apache.hadoop.mapreduce.v2.api.records.JobState;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptCompletionEvent;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptCompletionEventStatus;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskId;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskType;
+import org.apache.hadoop.mapreduce.v2.api.records.*;
 import org.apache.hadoop.mapreduce.v2.app.job.Task;
 import org.apache.hadoop.mapreduce.v2.app.job.TaskAttempt;
 import org.apache.hadoop.mapreduce.v2.hs.HistoryFileManager.HistoryFileInfo;
@@ -196,6 +188,12 @@ public class CompletedJob implements org.apache.hadoop.mapreduce.v2.app.job.Job 
     return getAttemptCompletionEvents(completionEvents,
         fromEventId, maxEvents);
   }
+  @Override
+  public synchronized TaskAttemptSendEvent[] getTaskAttemptSendEvents(int startIndex, int maxEvents) {
+        return null;
+  }
+
+
 
   @Override
   public synchronized TaskCompletionEvent[] getMapAttemptCompletionEvents(
@@ -206,6 +204,21 @@ public class CompletedJob implements org.apache.hadoop.mapreduce.v2.app.job.Job 
     return TypeConverter.fromYarn(getAttemptCompletionEvents(
         mapCompletionEvents, startIndex, maxEvents));
   }
+
+  //heshulin
+  private static TaskAttemptSendEvent[] getAttemptSendEvents(
+      List<TaskAttemptSendEvent> eventList,
+      int startIndex, int maxEvents) {
+    TaskAttemptSendEvent[] events = new TaskAttemptSendEvent[0];
+        if (eventList.size() > startIndex) {
+            int actualMax = Math.min(maxEvents,
+                        (eventList.size() - startIndex));
+            events = eventList.subList(startIndex, actualMax + startIndex)
+                        .toArray(events);
+        }
+    return events;
+  }
+
 
   @Override
   public TaskSendEvent[] getMapAttemptSendEvents(int startIndex, int maxEvents) {

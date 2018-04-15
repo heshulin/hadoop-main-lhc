@@ -15,7 +15,7 @@ import org.apache.hadoop.mapred.TaskAttemptID;
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class TaskSendEvent
-        extends org.apache.hadoop.mapreduce.TaskCompletionEvent {
+        extends org.apache.hadoop.mapreduce.TaskSendEvent {
     @InterfaceAudience.Public
     @InterfaceStability.Stable
     /**
@@ -78,12 +78,12 @@ public class TaskSendEvent
                                org.apache.hadoop.mapred.checkpoint.TaskSendEvent.Status status,
                                String taskTrackerHttp){
         super(eventId, taskId, idWithinJob, isMap, org.apache.hadoop.mapreduce.
-                TaskCompletionEvent.Status.valueOf(status.name()), taskTrackerHttp);
+                TaskSendEvent.Status.valueOf(status.name()), taskTrackerHttp);
     }
 
     @Private
     public static org.apache.hadoop.mapred.checkpoint.TaskSendEvent downgrade(
-            org.apache.hadoop.mapreduce.TaskCompletionEvent event) {
+            org.apache.hadoop.mapreduce.TaskSendEvent event) {
         return new org.apache.hadoop.mapred.checkpoint.TaskSendEvent(event.getEventId(),
                 TaskAttemptID.downgrade(event.getTaskAttemptId()),event.idWithinJob(),
                 event.isMapTask(), org.apache.hadoop.mapred.checkpoint.TaskSendEvent.Status.valueOf(event.getStatus().name()),
@@ -150,16 +150,16 @@ public class TaskSendEvent
     @Private
     public void setTaskStatus(org.apache.hadoop.mapred.checkpoint.TaskSendEvent.Status status) {
         super.setTaskStatus(org.apache.hadoop.mapreduce.
-                TaskCompletionEvent.Status.valueOf(status.name()));
+                TaskSendEvent.Status.valueOf(status.name()));
     }
 
     /**
      * Set the task completion time
-     * @param taskCompletionTime time (in millisec) the task took to complete
+     * @param taskSendTime time (in millisec) the task took to complete
      */
     @Private
-    public void setTaskRunTime(int taskCompletionTime) {
-        super.setTaskRunTime(taskCompletionTime);
+    public void setTaskRunTime(int taskSendTime) {
+        super.setTaskRunTime(taskSendTime);
     }
 
     /**

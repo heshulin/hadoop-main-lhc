@@ -9,5 +9,5 @@ public enum TaskAttemptSendEventStatus {
     SUCCEEDED,
     OBSOLETE,
     TIPFAILED,
-    //SENDED
+    SENDED
 }

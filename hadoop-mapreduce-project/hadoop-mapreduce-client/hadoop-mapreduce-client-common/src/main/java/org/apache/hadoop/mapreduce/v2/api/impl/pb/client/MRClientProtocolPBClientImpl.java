@@ -27,8 +27,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.ipc.RemoteException;
+import org.apache.hadoop.mapreduce.v2.api.GetTaskAttemptSendEventsResponse;
 import org.apache.hadoop.mapreduce.v2.api.MRClientProtocol;
 import org.apache.hadoop.mapreduce.v2.api.MRClientProtocolPB;
+import org.apache.hadoop.mapreduce.v2.api.impl.pb.service.GetTaskAttemptSendEventsRequest;
+import org.apache.hadoop.mapreduce.v2.api.impl.pb.service.GetTaskAttemptSendEventsRequestPBImpl;
+import org.apache.hadoop.mapreduce.v2.api.impl.pb.service.GetTaskAttemptSendEventsResponsePBImpl;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.CancelDelegationTokenRequest;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.CancelDelegationTokenResponse;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.FailTaskAttemptRequest;
@@ -178,6 +182,16 @@ public class MRClientProtocolPBClientImpl implements MRClientProtocol,
     } catch (ServiceException e) {
       throw unwrapAndThrowException(e);
     }
+  }
+
+  @Override
+  public GetTaskAttemptSendEventsResponse getTaskAttemptSendEvents(GetTaskAttemptSendEventsRequest request) throws IOException {
+          GetTaskAttemptSendEventsRequestProto requestProto = ((GetTaskAttemptSendEventsRequestPBImpl)request).getProto();
+          try {
+              return new GetTaskAttemptSendEventsResponsePBImpl(proxy.getTaskAttemptSendEvents(null, requestProto));
+          } catch (ServiceException e){
+              throw  unwrapAndThrowException(e);
+          }
   }
 
   @Override

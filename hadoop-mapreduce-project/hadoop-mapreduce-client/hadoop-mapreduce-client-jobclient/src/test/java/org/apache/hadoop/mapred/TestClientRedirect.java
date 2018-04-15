@@ -33,8 +33,10 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.MRConfig;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskType;
+import org.apache.hadoop.mapreduce.v2.api.GetTaskAttemptSendEventsResponse;
 import org.apache.hadoop.mapreduce.v2.api.HSClientProtocol;
 import org.apache.hadoop.mapreduce.v2.api.MRClientProtocol;
+import org.apache.hadoop.mapreduce.v2.api.impl.pb.service.GetTaskAttemptSendEventsRequest;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.FailTaskAttemptRequest;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.FailTaskAttemptResponse;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.GetCountersRequest;
@@ -243,6 +245,7 @@ public class TestClientRedirect {
       }
     }
     Assert.assertEquals(1, counters.countCounters());
+
   }
 
   class RMService extends AbstractService implements ApplicationClientProtocol {
@@ -528,6 +531,11 @@ public class TestClientRedirect {
       response.setCounters(counters);
       return response;
     }
+    @Override
+    public GetTaskAttemptSendEventsResponse getTaskAttemptSendEvents(GetTaskAttemptSendEventsRequest request)
+       throws IOException {
+            return null;
+    }
 
     @Override
     public GetJobReportResponse getJobReport(GetJobReportRequest request)
@@ -568,6 +576,7 @@ public class TestClientRedirect {
             throws IOException {
       return null;
     }
+
 
     @Override
     public GetTaskReportsResponse

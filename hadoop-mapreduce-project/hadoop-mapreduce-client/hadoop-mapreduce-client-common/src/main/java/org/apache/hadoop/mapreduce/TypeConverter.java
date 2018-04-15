@@ -182,6 +182,18 @@ public class TypeConverter {
               newEvent.getMapOutputServerAddress());
   }
 
+  public static TaskSendEvent[] fromYarn(
+          TaskAttemptSendEvent[] newEvents) {
+    TaskSendEvent[] oldEvents =
+            new TaskSendEvent[newEvents.length];
+    int i = 0;
+    for (TaskAttemptSendEvent newEvent
+            : newEvents) {
+      oldEvents[i++] = fromYarn(newEvent);
+    }
+    return oldEvents;
+  }
+
   public static TaskSendEvent fromYarn(
           TaskAttemptSendEvent newEvent) {
     return new TaskSendEvent(newEvent.getEventId(),

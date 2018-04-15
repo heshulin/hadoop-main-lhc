@@ -171,7 +171,7 @@ enum TaskAttemptSendEventStatusProto {
   TASE_SUCCEEDED = 3;
   TASE_OBSOLETE = 4;
   TASE_TIPFAILED = 5;
-  //TACE_SENDED = 6;
+  TACE_SENDED = 6;
 }
 
 message TaskAttemptCompletionEventProto {

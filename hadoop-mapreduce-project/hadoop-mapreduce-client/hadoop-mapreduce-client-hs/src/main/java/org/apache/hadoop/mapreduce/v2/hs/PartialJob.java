@@ -29,13 +29,7 @@ import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.checkpoint.TaskSendEvent;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.JobACL;
-import org.apache.hadoop.mapreduce.v2.api.records.AMInfo;
-import org.apache.hadoop.mapreduce.v2.api.records.JobId;
-import org.apache.hadoop.mapreduce.v2.api.records.JobReport;
-import org.apache.hadoop.mapreduce.v2.api.records.JobState;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptCompletionEvent;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskId;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskType;
+import org.apache.hadoop.mapreduce.v2.api.records.*;
 import org.apache.hadoop.mapreduce.v2.app.job.Task;
 import org.apache.hadoop.mapreduce.v2.jobhistory.JobIndexInfo;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -155,6 +149,11 @@ public class PartialJob implements org.apache.hadoop.mapreduce.v2.app.job.Job {
       int fromEventId, int maxEvents) {
     return null;
   }
+  @Override
+  public TaskAttemptSendEvent[] getTaskAttemptSendEvents(int fromEventId, int maxEvents) {
+        return new TaskAttemptSendEvent[0];
+      }
+
 
   @Override
   public TaskCompletionEvent[] getMapAttemptCompletionEvents(

@@ -20,6 +20,7 @@ package org.apache.hadoop.mapreduce.v2.api.impl.pb.service;
 
 import java.io.IOException;
 
+import org.apache.hadoop.mapreduce.v2.api.GetTaskAttemptSendEventsResponse;
 import org.apache.hadoop.mapreduce.v2.api.MRClientProtocol;
 import org.apache.hadoop.mapreduce.v2.api.MRClientProtocolPB;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.CancelDelegationTokenResponse;
@@ -183,8 +184,9 @@ public class MRClientProtocolPBServiceImpl implements MRClientProtocolPB {
           GetTaskAttemptSendEventsRequestProto proto)
           throws ServiceException {
     GetTaskAttemptSendEventsRequest request = new GetTaskAttemptSendEventsRequestPBImpl(proto);
+
     try {
-      GetTaskAttemptCompletionEventsResponse response = real.getTaskAttemptSendEvents(request);
+      GetTaskAttemptSendEventsResponse response = real.getTaskAttemptSendEvents(request);
       return ((GetTaskAttemptSendEventsResponsePBImpl)response).getProto();
     } catch (IOException e) {
       throw new ServiceException(e);

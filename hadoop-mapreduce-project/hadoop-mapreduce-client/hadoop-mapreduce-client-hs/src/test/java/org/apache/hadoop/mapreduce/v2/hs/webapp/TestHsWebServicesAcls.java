@@ -44,13 +44,7 @@ import org.apache.hadoop.mapred.checkpoint.TaskSendEvent;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.JobACL;
 import org.apache.hadoop.mapreduce.MRConfig;
-import org.apache.hadoop.mapreduce.v2.api.records.AMInfo;
-import org.apache.hadoop.mapreduce.v2.api.records.JobId;
-import org.apache.hadoop.mapreduce.v2.api.records.JobReport;
-import org.apache.hadoop.mapreduce.v2.api.records.JobState;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptCompletionEvent;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskId;
-import org.apache.hadoop.mapreduce.v2.api.records.TaskType;
+import org.apache.hadoop.mapreduce.v2.api.records.*;
 import org.apache.hadoop.mapreduce.v2.app.job.Job;
 import org.apache.hadoop.mapreduce.v2.app.job.Task;
 import org.apache.hadoop.mapreduce.v2.hs.HistoryContext;
@@ -397,6 +391,11 @@ public class TestHsWebServicesAcls {
     public TaskAttemptCompletionEvent[] getTaskAttemptCompletionEvents(
         int fromEventId, int maxEvents) {
       return mockJob.getTaskAttemptCompletionEvents(fromEventId, maxEvents);
+    }
+
+    @Override
+    public TaskAttemptSendEvent[] getTaskAttemptSendEvents(int fromEventId, int maxEvents) {
+           return new TaskAttemptSendEvent[0];
     }
 
     @Override

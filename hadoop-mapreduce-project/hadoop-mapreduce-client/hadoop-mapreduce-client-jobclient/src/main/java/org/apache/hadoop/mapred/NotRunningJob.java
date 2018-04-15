@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.hadoop.mapreduce.v2.api.GetTaskAttemptSendEventsResponse;
 import org.apache.hadoop.mapreduce.v2.api.MRClientProtocol;
+import org.apache.hadoop.mapreduce.v2.api.impl.pb.service.GetTaskAttemptSendEventsRequest;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.CancelDelegationTokenRequest;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.CancelDelegationTokenResponse;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.FailTaskAttemptRequest;
@@ -157,6 +159,12 @@ public class NotRunningJob implements MRClientProtocol {
     resp.addAllCompletionEvents(new ArrayList<TaskAttemptCompletionEvent>());
     return resp;
   }
+
+  @Override
+  public GetTaskAttemptSendEventsResponse getTaskAttemptSendEvents(GetTaskAttemptSendEventsRequest request)
+      throws IOException {
+        return null;
+      }
 
   @Override
   public GetTaskAttemptReportResponse getTaskAttemptReport(

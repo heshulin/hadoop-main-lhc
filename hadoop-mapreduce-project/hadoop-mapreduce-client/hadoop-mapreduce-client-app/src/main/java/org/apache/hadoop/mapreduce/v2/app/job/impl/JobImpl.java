@@ -848,6 +848,11 @@ public class JobImpl implements org.apache.hadoop.mapreduce.v2.app.job.Job,
   }
 
   @Override
+  public TaskAttemptSendEvent[] getTaskAttemptSendEvents(int fromEventId, int maxEvents) {
+    return new TaskAttemptSendEvent[0];
+  }
+
+  @Override
   public List<String> getDiagnostics() {
     readLock.lock();
     try {

@@ -21,6 +21,7 @@ package org.apache.hadoop.mapreduce.v2.api;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
+import org.apache.hadoop.mapreduce.v2.api.impl.pb.service.GetTaskAttemptSendEventsRequest;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.CancelDelegationTokenRequest;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.CancelDelegationTokenResponse;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.FailTaskAttemptRequest;
@@ -61,6 +62,8 @@ public interface MRClientProtocol {
   public GetTaskAttemptReportResponse getTaskAttemptReport(GetTaskAttemptReportRequest request) throws IOException;
   public GetCountersResponse getCounters(GetCountersRequest request) throws IOException;
   public GetTaskAttemptCompletionEventsResponse getTaskAttemptCompletionEvents(GetTaskAttemptCompletionEventsRequest request) throws IOException;
+  public GetTaskAttemptSendEventsResponse getTaskAttemptSendEvents(GetTaskAttemptSendEventsRequest request) throws IOException;
+
   public GetTaskReportsResponse getTaskReports(GetTaskReportsRequest request) throws IOException;
   public GetDiagnosticsResponse getDiagnostics(GetDiagnosticsRequest request) throws IOException;
   public KillJobResponse killJob(KillJobRequest request) throws IOException;
