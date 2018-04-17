@@ -173,12 +173,10 @@ class EventFetcher<K,V> extends Thread {
       System.out.println("调试信息3");
       LOG.info("reduce中umbilical类型："+umbilical.getClass().getName());
       System.out.println("reduce中umbilical类型："+umbilical.getClass().getName());
-      MapTaskSendEventsUpdate update=null;
 //      try{
         System.out.println("在这");
         LOG.info("在这");
-         update =
-                umbilical.getMapSendEvents(
+      MapTaskSendEventsUpdate update = umbilical.getMapSendEvents(
                         (org.apache.hadoop.mapred.JobID)reduce.getJobID(),
                         fromEventIdxSend,
                         maxEventsToFetch,

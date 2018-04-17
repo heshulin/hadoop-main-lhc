@@ -128,9 +128,10 @@ public class Shuffle<K, V> implements ShuffleConsumerPlugin<K, V>, ExceptionRepo
     }
     
     // Wait for shuffle to complete successfully
+    System.out.println("shxy 开始循环等待");
     while (!scheduler.waitUntilDone(PROGRESS_FREQUENCY)) {
       reporter.progress();
-      
+      System.out.println("shxy 完成一次跳过");
       synchronized (this) {
         if (throwable != null) {
           throw new ShuffleError("error in shuffle in " + throwingThreadName,
@@ -138,6 +139,7 @@ public class Shuffle<K, V> implements ShuffleConsumerPlugin<K, V>, ExceptionRepo
         }
       }
     }
+    System.out.println("shxy 跳出循环");
 
     // Stop the event-fetcher thread
     eventFetcher.shutDown();

@@ -20,6 +20,7 @@ public class MapTaskSendEventsUpdate {
         System.out.println(events.length+"何树林 sendevent事件长度，");
         this.events = events;
         this.reset = reset;
+        System.out.println("何树林 send到目前为止还没有爆炸");
     }
 
     public boolean shouldReset() {
