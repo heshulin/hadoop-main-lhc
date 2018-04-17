@@ -1,5 +1,6 @@
-package org.apache.hadoop.mapreduce.v2.api.impl.pb.service;
+package org.apache.hadoop.mapreduce.v2.api.protocolrecords.impl.pb;
 
+import org.apache.hadoop.mapreduce.v2.api.protocolrecords.GetTaskAttemptSendEventsRequest;
 import org.apache.hadoop.mapreduce.v2.api.records.JobId;
 import org.apache.hadoop.mapreduce.v2.api.records.impl.pb.JobIdPBImpl;
 import org.apache.hadoop.mapreduce.v2.proto.MRProtos.JobIdProto;

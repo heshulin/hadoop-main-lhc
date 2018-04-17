@@ -1,10 +1,13 @@
-package org.apache.hadoop.mapreduce.v2.api.impl.pb.service;
+package org.apache.hadoop.mapreduce.v2.api.protocolrecords.impl.pb;
 
-import org.apache.hadoop.mapreduce.v2.api.GetTaskAttemptSendEventsResponse;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.GetTaskAttemptSendEventsResponse;
 import org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptSendEvent;
 import org.apache.hadoop.mapreduce.v2.api.records.impl.pb.TaskAttemptSendEventPBImpl;
 import org.apache.hadoop.yarn.api.records.impl.pb.ProtoBase;
+import org.apache.hadoop.mapreduce.v2.proto.MRProtos.TaskAttemptSendEventProto;
+import org.apache.hadoop.mapreduce.v2.proto.MRServiceProtos.GetTaskAttemptSendEventsRequestProto;
+import org.apache.hadoop.mapreduce.v2.proto.MRServiceProtos.GetTaskAttemptSendEventsResponseProto;
+import org.apache.hadoop.mapreduce.v2.proto.MRServiceProtos.GetTaskAttemptSendEventsResponseProtoOrBuilder;
 
 import java.util.ArrayList;
 import java.util.Iterator;

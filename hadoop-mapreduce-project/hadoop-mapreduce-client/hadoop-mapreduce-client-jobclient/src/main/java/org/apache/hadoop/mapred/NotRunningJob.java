@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.hadoop.mapreduce.v2.api.GetTaskAttemptSendEventsResponse;
+import org.apache.hadoop.mapreduce.v2.api.protocolrecords.GetTaskAttemptSendEventsResponse;
 import org.apache.hadoop.mapreduce.v2.api.MRClientProtocol;
-import org.apache.hadoop.mapreduce.v2.api.impl.pb.service.GetTaskAttemptSendEventsRequest;
+import org.apache.hadoop.mapreduce.v2.api.protocolrecords.GetTaskAttemptSendEventsRequest;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.CancelDelegationTokenRequest;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.CancelDelegationTokenResponse;
 import org.apache.hadoop.mapreduce.v2.api.protocolrecords.FailTaskAttemptRequest;

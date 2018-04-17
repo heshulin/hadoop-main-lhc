@@ -1,4 +1,4 @@
-package org.apache.hadoop.mapreduce.v2.api.impl.pb.service;
+package org.apache.hadoop.mapreduce.v2.api.protocolrecords;
 
 import org.apache.hadoop.mapreduce.v2.api.records.JobId;
 

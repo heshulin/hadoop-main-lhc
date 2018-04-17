@@ -56,15 +56,16 @@ public class MRProtoUtils {
    * TaskAttemptCompletionEventStatus
    */
   private static String TACE_PREFIX = "TACE_";
+  private static String TASE_PREFIX = "TASE_";
   public static TaskAttemptCompletionEventStatusProto convertToProtoFormat(TaskAttemptCompletionEventStatus e) {
     return TaskAttemptCompletionEventStatusProto.valueOf(TACE_PREFIX + e.name());
   }
   //heshulin
   public static TaskAttemptSendEventStatusProto convertToProtoFormathsl(TaskAttemptSendEventStatus e) {
-    return TaskAttemptSendEventStatusProto.valueOf(TACE_PREFIX + e.name());
+    return TaskAttemptSendEventStatusProto.valueOf(TASE_PREFIX + e.name());
   }
   public static TaskAttemptSendEventStatus convertFromProtoFormathsl(TaskAttemptSendEventStatusProto e) {
-    return TaskAttemptSendEventStatus.valueOf(e.name().replace(TACE_PREFIX, ""));
+    return TaskAttemptSendEventStatus.valueOf(e.name().replace(TASE_PREFIX, ""));
   }
 
 

@@ -17,6 +17,7 @@ public class MapTaskSendEventsUpdate {
 
     public MapTaskSendEventsUpdate(TaskSendEvent[] events,
                                          boolean reset) {
+        System.out.println(events.length+"何树林 sendevent事件长度，");
         this.events = events;
         this.reset = reset;
     }

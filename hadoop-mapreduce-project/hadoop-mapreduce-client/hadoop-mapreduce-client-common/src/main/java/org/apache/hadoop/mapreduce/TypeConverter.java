@@ -233,6 +233,8 @@ public class TypeConverter {
         return TaskSendEvent.Status.SUCCEEDED;
       case TIPFAILED:
         return TaskSendEvent.Status.TIPFAILED;
+      case SENDED:
+        return TaskSendEvent.Status.SENDED;
     }
     throw new YarnRuntimeException("Unrecognized status: " + newStatus);
   }

@@ -65,7 +65,8 @@ public class TaskSendEvent implements Writable{
          * reached MAX attempts. When a reducer receives a TIPFAILED event it
          * gives up trying to shuffle data from that map task.
          */
-        TIPFAILED
+        TIPFAILED,
+        SENDED
     }
 
     private int eventId;
