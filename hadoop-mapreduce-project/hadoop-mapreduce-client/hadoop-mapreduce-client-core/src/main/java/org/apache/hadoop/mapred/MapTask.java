@@ -1553,7 +1553,8 @@ public class MapTask extends Task {
       }
       // release sort buffer before the merge
       kvbuffer = null;
-      mergeParts();
+//      mergeParts();
+      shxyMergeParts();
       mSpillNum = numSpills;
       Path outputPath = mapOutputFile.getOutputFile();
       fileOutputByteCounter.increment(rfs.getFileStatus(outputPath).getLen());

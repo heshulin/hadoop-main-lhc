@@ -1,5 +1,8 @@
 package org.apache.hadoop.mapred.checkpoint;
 
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 
 import java.io.DataInput;
@@ -9,7 +12,9 @@ import java.io.IOException;
 /**
  * Created by HeShulin on 2018/3/26.
  */
-public class MapTaskSendEventsUpdate {
+@InterfaceAudience.Private
+@InterfaceStability.Unstable
+public class MapTaskSendEventsUpdate  implements Writable {
     TaskSendEvent[] events;
     boolean reset;
 

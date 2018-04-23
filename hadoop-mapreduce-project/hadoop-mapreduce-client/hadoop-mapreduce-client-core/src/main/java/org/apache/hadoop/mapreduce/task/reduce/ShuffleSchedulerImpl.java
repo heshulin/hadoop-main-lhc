@@ -192,6 +192,11 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
                 event.getTaskAttemptId() + "'");
         break;
       case SENDED:
+        URI u1 = getBaseURI(reduceId, event.getTaskTrackerHttp());
+        addKnownMapOutput(u1.getHost() + ":" + u1.getPort(),
+                u1.toString(),
+                event.getTaskAttemptId());
+        maxMapRuntime = Math.max(maxMapRuntime, event.getTaskRunTime());
         LOG.info("何树林——成功接收send事件: '" );
         break;
     }
