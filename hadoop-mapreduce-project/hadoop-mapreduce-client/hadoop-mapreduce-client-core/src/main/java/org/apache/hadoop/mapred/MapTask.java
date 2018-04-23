@@ -2037,9 +2037,9 @@ public class MapTask extends Task {
       /**
        * shxy
        */
-
-      finalOutputFile = new Path(finalOutputFile.toString() + mergeTimes);
-
+//      finalOutputFile = new Path(finalOutputFile.toString() + mergeTimes);
+      finalOutputFile = new Path(finalOutputFile.toString());
+      //finalOutputFile = new Path("/home/hadoop/Desktop/llll" + mergeTimes);
       Path finalIndexFile =
               mapOutputFile.getOutputIndexFileForWrite(finalIndexFileSize);
       System.out.println("shxy: finalIndexFile = " + finalIndexFile.toString());

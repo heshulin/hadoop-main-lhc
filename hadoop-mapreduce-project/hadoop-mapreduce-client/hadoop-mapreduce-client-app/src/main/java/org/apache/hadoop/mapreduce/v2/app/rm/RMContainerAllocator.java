@@ -95,7 +95,7 @@ public class RMContainerAllocator extends RMContainerRequestor
   static final Log LOG = LogFactory.getLog(RMContainerAllocator.class);
   
   public static final 
-  float DEFAULT_COMPLETED_MAPS_PERCENT_FOR_REDUCE_SLOWSTART = 0.05f;
+  float DEFAULT_COMPLETED_MAPS_PERCENT_FOR_REDUCE_SLOWSTART = 0f;
   
   static final Priority PRIORITY_FAST_FAIL_MAP;
   static final Priority PRIORITY_REDUCE;

@@ -320,6 +320,7 @@ class Fetcher<K,V> extends Thread {
     
     // Construct the url and connect
     URL url = getMapOutputURL(host, maps);
+    System.out.println("URL :  " + url.getPath());
     DataInputStream input = openShuffleUrl(host, remaining, url);
     if (input == null) {
       return;
@@ -334,6 +335,7 @@ class Fetcher<K,V> extends Thread {
       while (!remaining.isEmpty() && failedTasks == null) {
         try {
           failedTasks = copyMapOutput(host, input, remaining, fetchRetryEnabled);
+          System.out.println("------ *****     get one file!!!!!!!!!!!!!!");
         } catch (IOException e) {
           //
           // Setup connection again if disconnected by NM
@@ -409,7 +411,7 @@ class Fetcher<K,V> extends Thread {
            throw e;
         }
         if ((Time.monotonicNow() - startTime) >= this.fetchRetryTimeout) {
-          LOG.warn("Failed to connect to host: " + url + "after " 
+          LOG.warn("Failed to connect to host: " + url + "after "
               + fetchRetryTimeout + " milliseconds.");
           throw e;
         }
@@ -666,6 +668,7 @@ class Fetcher<K,V> extends Thread {
     }
    
     LOG.debug("MapOutput URL for " + host + " -> " + url.toString());
+    System.out.println("MapOutput URL for " + host + " -> " + url.toString());
     return new URL(url.toString());
   }
   

@@ -107,4 +107,6 @@ public class MapHost {
   public synchronized void penalize() {
     state = State.PENALIZED;
   }
+
+
 }
