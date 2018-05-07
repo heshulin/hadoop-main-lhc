@@ -18,26 +18,14 @@
 
 package org.apache.hadoop.mapred;
 
-import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileSystem.Statistics;
-import org.apache.hadoop.fs.LocalFileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.RawComparator;
 import org.apache.hadoop.io.SequenceFile;
@@ -52,24 +40,24 @@ import org.apache.hadoop.mapred.IFile.Writer;
 import org.apache.hadoop.mapred.Merger.Segment;
 import org.apache.hadoop.mapred.SortedRanges.SkipRangeIterator;
 import org.apache.hadoop.mapred.checkpoint.UploadCheckpointHDFSThread;
+import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.TaskCounter;
-import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter;
 import org.apache.hadoop.mapreduce.lib.map.WrappedMapper;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter;
 import org.apache.hadoop.mapreduce.split.JobSplit.TaskSplitIndex;
 import org.apache.hadoop.mapreduce.task.MapContextImpl;
-import org.apache.hadoop.mapreduce.CryptoUtils;
-import org.apache.hadoop.util.IndexedSortable;
-import org.apache.hadoop.util.IndexedSorter;
-import org.apache.hadoop.util.Progress;
-import org.apache.hadoop.util.QuickSort;
-import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.util.StringInterner;
-import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.*;
+
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /** A Map task. */
 // 哦也
@@ -739,6 +727,8 @@ public class MapTask extends Task {
     }
   }
 
+  private static org.apache.hadoop.mapreduce.RecordReader input = null;
+  private static long wePos = -1;
   @SuppressWarnings("unchecked")
   private <INKEY, INVALUE, OUTKEY, OUTVALUE>
   void runNewMapper(final JobConf job,
@@ -794,6 +784,26 @@ public class MapTask extends Task {
                     mapContext);
 
     try {
+//      this.input = input;
+//      Configuration conf = new Configuration();
+//      FileSystem fs = FileSystem.get(conf);
+//      Path path = new Path("hdfs://127.0.0.1:9000/" + getTaskID());
+//      if (fs.exists(path)) {
+//        System.out.println("文件存在，使用检查点开始map任务");
+//        FSDataInputStream in = fs.open(path);
+//        byte[] buff = new byte[1024];
+//        in.read(buff);
+//        String[] params = new String(buff).split("\n");
+//        wePos = Long.valueOf(params[2]);
+//
+//        // ((NewTrackingRecordReader) input).setNewStart(wePos);
+//        ((NewTrackingRecordReader) input).initialize(split, mapperContext,wePos);
+//        ((NewTrackingRecordReader) input).setPos(wePos);
+//
+//      }else{
+//        input.initialize(split, mapperContext);
+//        System.out.println("文件不存在，不存在检查点，是第一次启动");
+//      }
       input.initialize(split, mapperContext);
       mapper.run(mapperContext);
       mapPhase.complete();
@@ -1048,6 +1058,7 @@ public class MapTask extends Task {
       combinerRunner = CombinerRunner.create(job, getTaskID(),
               combineInputCounter,
               reporter, null);
+      combinerRunner = null;
       if (combinerRunner != null) {
         final Counters.Counter combineOutputCounter =
                 reporter.getCounter(TaskCounter.COMBINE_OUTPUT_RECORDS);
@@ -1109,7 +1120,8 @@ public class MapTask extends Task {
       checkSpillException();
       bufferRemaining -= METASIZE;
       //-ljn-spill条件
-      if (bufferRemaining <= 0 || (timeArrived&&distanceTo(4*kvindex, bufindex)>0)) {
+      //if (bufferRemaining <= 0 || (timeArrived&&distanceTo(4*kvindex, bufindex)>0)) {
+      if (bufferRemaining <= 0) {
         //-ljn
         //System.out.println("****collect-spill time arrived");
 
@@ -1128,7 +1140,8 @@ public class MapTask extends Task {
               final int bUsed = distanceTo(kvbidx, bufindex);
               final boolean bufsoftlimit = bUsed >= softLimit;
               if ((kvbend + METASIZE) % kvbuffer.length !=
-                      equator - (equator % METASIZE) || (!timeArrived&&!bufsoftlimit)) {
+//                      equator - (equator % METASIZE) || (!timeArrived&&!bufsoftlimit)) {
+                      equator - (equator % METASIZE)) {
                 // spill finished, reclaim space
                 System.out.println("****another list is running but not spill thread.");
                 resetSpill();
@@ -1136,7 +1149,8 @@ public class MapTask extends Task {
                         distanceTo(bufindex, kvbidx) - 2 * METASIZE,
                         softLimit - bUsed) - METASIZE;
                 continue;
-              } else if ((bufsoftlimit && kvindex != kvend) || (timeArrived)) {
+//              } else if ((bufsoftlimit && kvindex != kvend) || (timeArrived)) {
+              } else if (bufsoftlimit && kvindex != kvend) {
                 //-ljn-promise that there is data in the buffer
                 timeArrived = false;
                 // spill records, if any collected; check latter, as it may
@@ -1554,10 +1568,15 @@ public class MapTask extends Task {
       // release sort buffer before the merge
       kvbuffer = null;
 //      mergeParts();
+      nowIndex = numSpills;
       shxyMergeParts();
       mSpillNum = numSpills;
       Path outputPath = mapOutputFile.getOutputFile();
-      fileOutputByteCounter.increment(rfs.getFileStatus(outputPath).getLen());
+      System.out.println("最后一次merge结束发生 outputPath = " + outputPath.toString());
+      //所有merge文件大小和
+
+      fileOutputByteCounter.increment(rfs.getFileStatus(new Path(outputPath.toString())).getLen());
+
     }
 
     public void close() {
@@ -1773,7 +1792,8 @@ public class MapTask extends Task {
             TaskAttemptID data1 = getTaskID();
             Path data2 = filename;
             //data3暂未设置
-            long data3 = 10;
+            long data3 =  10;
+            System.out.println("设置的pos = " +data3);
             uploadCheckpointHDFSThread = new UploadCheckpointHDFSThread();
             uploadCheckpointHDFSThread.init(data1,data2,data3);
             uploadCheckpointHDFSThread.start();
@@ -1983,7 +2003,7 @@ public class MapTask extends Task {
     }
 
     private int mSpillNum = 0;
-    final Path[] filename = new Path[20];
+    final Path[] filename = new Path[1000];
     int lastIndex = 0;
     int nowIndex = 0;
     int mergeTimes = 0;
@@ -2037,9 +2057,13 @@ public class MapTask extends Task {
       /**
        * shxy
        */
+      StringBuilder shxys = new StringBuilder(finalOutputFile.toString());
+//      if (mergeTimes != 1)
+//          shxys.insert(shxys.lastIndexOf("/"),mergeTimes);
+      System.out.println("success - - -- - - " + shxys);
 //      finalOutputFile = new Path(finalOutputFile.toString() + mergeTimes);
-      finalOutputFile = new Path(finalOutputFile.toString());
-      //finalOutputFile = new Path("/home/hadoop/Desktop/llll" + mergeTimes);
+      finalOutputFile = new Path(shxys.toString());;
+      //finalOutputFile = new Path("/home/hadoop/Desktop/llll" + mergeTimes)/;
       Path finalIndexFile =
               mapOutputFile.getOutputIndexFileForWrite(finalIndexFileSize);
       System.out.println("shxy: finalIndexFile = " + finalIndexFile.toString());

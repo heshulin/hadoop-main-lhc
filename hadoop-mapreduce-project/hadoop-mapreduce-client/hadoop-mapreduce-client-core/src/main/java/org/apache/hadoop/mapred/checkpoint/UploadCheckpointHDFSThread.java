@@ -33,7 +33,7 @@ public class UploadCheckpointHDFSThread extends Thread{
             String data = data1.toString() + "\n" + data2 + "\n" + data3 + "\n";
             Configuration conf = new Configuration();
             FileSystem fs = FileSystem.get(conf);
-            FSDataOutputStream mout = fs.create(new Path("hdfs://127.0.0.1:9000/" + data1.toString()));
+            FSDataOutputStream mout = fs.create(new Path("hdfs://master:9000/" + data1.toString()));
             mout.write(data.getBytes());
             mout.close();
             System.out.println("数据组存储成功");

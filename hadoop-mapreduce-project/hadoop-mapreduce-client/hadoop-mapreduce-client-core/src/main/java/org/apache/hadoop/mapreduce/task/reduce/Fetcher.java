@@ -187,6 +187,7 @@ class Fetcher<K,V> extends Thread {
 
           // Get a host to shuffle from
           host = scheduler.getHost();
+          System.out.println("从host复制：copy from host:" + host.getHostName() + "  " + host.getSucc());
           //使进程状态为忙碌
           metrics.threadBusy();
           // Shuffle
@@ -230,7 +231,9 @@ class Fetcher<K,V> extends Thread {
   @VisibleForTesting
   protected synchronized void openConnection(URL url)
       throws IOException {
+    System.out.println("后面的 URL :" + url.getPath());
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    System.out.println("后面的后面 URL :" + url.getPath());
     if (sslShuffle) {
       HttpsURLConnection httpsConn = (HttpsURLConnection) conn;
       try {
@@ -261,7 +264,7 @@ class Fetcher<K,V> extends Thread {
   private DataInputStream openShuffleUrl(MapHost host,
       Set<TaskAttemptID> remaining, URL url) {
     DataInputStream input = null;
-
+    System.out.println("进入openShuffleUrl时 URL：" + url);
     try {
       setupConnectionsWithRetry(host, remaining, url);
       if (stopped) {
@@ -322,6 +325,7 @@ class Fetcher<K,V> extends Thread {
     URL url = getMapOutputURL(host, maps);
     System.out.println("URL :  " + url.getPath());
     DataInputStream input = openShuffleUrl(host, remaining, url);
+    System.out.println("最后一次获取 URL :  " + url.getPath());
     if (input == null) {
       return;
     }
@@ -377,6 +381,7 @@ class Fetcher<K,V> extends Thread {
 
   private void setupConnectionsWithRetry(MapHost host,
       Set<TaskAttemptID> remaining, URL url) throws IOException {
+    System.out.println("进入setupConnectionsWithRetry时 URL:"  + url);
     openConnectionWithRetry(host, remaining, url);
     if (stopped) {
       return;
@@ -400,6 +405,7 @@ class Fetcher<K,V> extends Thread {
   private void openConnectionWithRetry(MapHost host,
       Set<TaskAttemptID> remaining, URL url) throws IOException {
     long startTime = Time.monotonicNow();
+    System.out.println("进入 openConnectionWithRetry 时，URL= " + url);
     boolean shouldWait = true;
     while (shouldWait) {
       try {
@@ -664,9 +670,11 @@ class Fetcher<K,V> extends Thread {
         url.append(",");
       }
       url.append(mapId);
+//      if (host.getmTimes() != 1)
+//        url.append(mapId +"" + host.getmTimes());
       first = false;
     }
-   
+
     LOG.debug("MapOutput URL for " + host + " -> " + url.toString());
     System.out.println("MapOutput URL for " + host + " -> " + url.toString());
     return new URL(url.toString());

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
@@ -72,7 +73,7 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
 
   private final int totalMaps;
   private int remainingMaps;
-  private Map<String, MapHost> mapLocations = new HashMap<String, MapHost>();
+  private Map<String, MapHost> mapLocations = new ConcurrentHashMap<String, MapHost>();
   private Set<MapHost> pendingHosts = new HashSet<MapHost>();
   private Set<TaskAttemptID> obsoleteMaps = new HashSet<TaskAttemptID>();
 
@@ -119,6 +120,7 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
     abortFailureLimit = Math.max(30, totalMaps / 10);
     copyTimeTracker = new CopyTimeTracker();
     remainingMaps = totalMaps;
+    System.out.println("所有maps：" + remainingMaps);
     finishedMaps = new boolean[remainingMaps];
     this.reporter = reporter;
     this.status = status;
@@ -147,10 +149,11 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
   public void resolve(TaskCompletionEvent event) {
     switch (event.getTaskStatus()) {
     case SUCCEEDED:
+      System.out.println("shxy :收到一个succ");
       URI u = getBaseURI(reduceId, event.getTaskTrackerHttp());
       addKnownMapOutput(u.getHost() + ":" + u.getPort(),
           u.toString(),
-          event.getTaskAttemptId());
+          event.getTaskAttemptId(),true);
       maxMapRuntime = Math.max(maxMapRuntime, event.getTaskRunTime());
       break;
     case FAILED:
@@ -173,10 +176,11 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
   public void sendresolve(TaskSendEvent event) throws IOException, InterruptedException {
     switch (event.getTaskStatus()) {
       case SUCCEEDED:
+        System.out.println("shxy :收到一个succ");
         URI u = getBaseURI(reduceId, event.getTaskTrackerHttp());
         addKnownMapOutput(u.getHost() + ":" + u.getPort(),
                 u.toString(),
-                event.getTaskAttemptId());
+                event.getTaskAttemptId(),true);
         maxMapRuntime = Math.max(maxMapRuntime, event.getTaskRunTime());
         break;
       case FAILED:
@@ -195,7 +199,7 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
         URI u1 = getBaseURI(reduceId, event.getTaskTrackerHttp());
         addKnownMapOutput(u1.getHost() + ":" + u1.getPort(),
                 u1.toString(),
-                event.getTaskAttemptId());
+                event.getTaskAttemptId(),false);
         maxMapRuntime = Math.max(maxMapRuntime, event.getTaskRunTime());
         LOG.info("何树林——成功接收send事件: '" );
         break;
@@ -226,14 +230,24 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
     failureCounts.remove(mapId);
     hostFailures.remove(host.getHostName());
     int mapIndex = mapId.getTaskID().getId();
-
+    System.out.println("shxy: go here");
     if (!finishedMaps[mapIndex]) {
       output.commit();
-      finishedMaps[mapIndex] = true;
-      shuffledMapsCounter.increment(1);
-      if (--remainingMaps == 0) {
-        notifyAll();
+//      finishedMaps[mapIndex] = true;
+//      shuffledMapsCounter.increment(1);
+      System.out.println("这个host是:" + host.getSucc());
+      if (host.getSucc()){
+        finishedMaps[mapIndex] = true;
+        shuffledMapsCounter.increment(1);
+        remainingMaps--;
+        System.out.println("remainingMaps = " + remainingMaps);
+        if (remainingMaps == 0){
+          notifyAll();
+        }
       }
+//      if (--remainingMaps == 0 ) {
+//        notifyAll();
+//      }
 
       // update single copy task status
       long copyMillis = (endMillis - startMillis);
@@ -415,20 +429,26 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
 
   public synchronized void addKnownMapOutput(String hostName,
                                              String hostUrl,
-                                             TaskAttemptID mapId) {
+                                             TaskAttemptID mapId,
+                                             boolean isSucc) {
     MapHost host = mapLocations.get(hostName);
     if (host == null) {
       host = new MapHost(hostName, hostUrl);
+      host.setmTimes(0);
+      host.setSucc(isSucc);
       mapLocations.put(hostName, host);
     }
+    host.setSucc(isSucc);
+    host.setmTimes(host.getmTimes()+1);
     host.addKnownMap(mapId);
-
+    System.out.println("shxy: 收到的事件是succ？" + isSucc);
     // Mark the host as pending
     if (host.getState() == State.PENDING) {
       pendingHosts.add(host);
       notifyAll();
     }
   }
+
 
 
   public synchronized void obsoleteMapOutput(TaskAttemptID mapId) {

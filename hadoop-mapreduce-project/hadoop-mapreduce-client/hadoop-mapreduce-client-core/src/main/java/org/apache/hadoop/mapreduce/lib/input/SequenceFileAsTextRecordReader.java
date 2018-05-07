@@ -92,4 +92,6 @@ public class SequenceFileAsTextRecordReader
   public synchronized void close() throws IOException {
     sequenceFileRecordReader.close();
   }
+
+
 }

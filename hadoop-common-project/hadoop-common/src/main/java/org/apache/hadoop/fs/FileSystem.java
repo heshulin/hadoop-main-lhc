@@ -2129,7 +2129,7 @@ public abstract class FileSystem extends Configured implements Closeable {
   public short getDefaultReplication(Path path) {
     return getDefaultReplication();
   }
-  
+
   /**
    * Return a file status object that represents the path.
    * @param f The path we want information from

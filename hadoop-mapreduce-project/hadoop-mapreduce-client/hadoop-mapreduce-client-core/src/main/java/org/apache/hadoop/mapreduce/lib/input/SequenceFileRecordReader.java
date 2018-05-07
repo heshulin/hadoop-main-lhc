@@ -36,19 +36,37 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 @InterfaceStability.Stable
 public class SequenceFileRecordReader<K, V> extends RecordReader<K, V> {
   private SequenceFile.Reader in;
+  private long pos;
   private long start;
   private long end;
   private boolean more = true;
   private K key = null;
   private V value = null;
   protected Configuration conf;
-
-  @Override
-  public void initialize(InputSplit split, 
-                         TaskAttemptContext context
-                         ) throws IOException, InterruptedException {
+  public void initialize(InputSplit split,
+                         TaskAttemptContext context,
+                         long mStart
+  ) throws IOException, InterruptedException {
     FileSplit fileSplit = (FileSplit) split;
-    conf = context.getConfiguration();    
+    conf = context.getConfiguration();
+    Path path = fileSplit.getPath();
+    FileSystem fs = path.getFileSystem(conf);
+    this.in = new SequenceFile.Reader(fs, path, conf);
+    this.end = fileSplit.getStart() + fileSplit.getLength();
+
+    if (fileSplit.getStart() > in.getPosition()) {
+      in.sync(fileSplit.getStart());                  // sync to start
+    }
+
+    this.start = in.getPosition() + mStart;
+    more = start < end;
+  }
+  @Override
+  public void initialize(InputSplit split,
+                         TaskAttemptContext context
+  ) throws IOException, InterruptedException {
+    FileSplit fileSplit = (FileSplit) split;
+    conf = context.getConfiguration();
     Path path = fileSplit.getPath();
     FileSystem fs = path.getFileSystem(conf);
     this.in = new SequenceFile.Reader(fs, path, conf);
@@ -84,12 +102,12 @@ public class SequenceFileRecordReader<K, V> extends RecordReader<K, V> {
   public K getCurrentKey() {
     return key;
   }
-  
+
   @Override
   public V getCurrentValue() {
     return value;
   }
-  
+
   /**
    * Return the progress within the input split
    * @return 0.0 to 1.0 of the input byte range
@@ -101,8 +119,28 @@ public class SequenceFileRecordReader<K, V> extends RecordReader<K, V> {
       return Math.min(1.0f, (in.getPosition() - start) / (float)(end - start));
     }
   }
-  
+
   public synchronized void close() throws IOException { in.close(); }
-  
+
+  public long getPos() {
+    return pos;
+  }
+
+  public void setPos(long pos) {
+    this.pos = pos;
+  }
+
+  public long getStart() {
+    return start;
+  }
+
+  public void setStart(long start) {
+    this.start = start;
+  }
+
+  public void setNewStart(long offset) {
+    this.start += offset;
+  }
+
 }
 

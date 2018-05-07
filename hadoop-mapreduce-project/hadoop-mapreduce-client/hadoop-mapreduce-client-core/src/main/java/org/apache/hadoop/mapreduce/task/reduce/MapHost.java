@@ -108,5 +108,21 @@ public class MapHost {
     state = State.PENALIZED;
   }
 
+  private int mTimes;
 
+  public int getmTimes() {
+    return mTimes;
+  }
+
+  public void setmTimes(int mTimes) {
+    this.mTimes = mTimes;
+  }
+
+  boolean isSucc = true;
+  public void setSucc(boolean b){
+    isSucc = b;
+  }
+  public boolean getSucc(){
+    return isSucc;
+  }
 }
