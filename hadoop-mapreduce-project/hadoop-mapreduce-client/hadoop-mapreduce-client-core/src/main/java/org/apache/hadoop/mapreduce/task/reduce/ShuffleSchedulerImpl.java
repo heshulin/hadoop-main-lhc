@@ -235,8 +235,8 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
       output.commit();
 //      finishedMaps[mapIndex] = true;
 //      shuffledMapsCounter.increment(1);
-      System.out.println("这个host是:" + host.getSucc());
-      if (host.getSucc()){
+      System.out.println("这个AttemptId是:" + mapId);
+      if (host.getIdIsSucc(mapId)){
         finishedMaps[mapIndex] = true;
         shuffledMapsCounter.increment(1);
         remainingMaps--;
@@ -435,12 +435,10 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
     if (host == null) {
       host = new MapHost(hostName, hostUrl);
       host.setmTimes(0);
-      host.setSucc(isSucc);
       mapLocations.put(hostName, host);
     }
-    host.setSucc(isSucc);
     host.setmTimes(host.getmTimes()+1);
-    host.addKnownMap(mapId);
+    host.addKnownMap(mapId,isSucc);
     System.out.println("shxy: 收到的事件是succ？" + isSucc);
     // Mark the host as pending
     if (host.getState() == State.PENDING) {
@@ -457,7 +455,10 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
 
   public synchronized void putBackKnownMapOutput(MapHost host,
                                                  TaskAttemptID mapId) {
-    host.addKnownMap(mapId);
+    host.addKnownMap(mapId,false);
+    /**
+     * zhuyi le ------
+     */
   }
 
 
@@ -503,7 +504,7 @@ public class ShuffleSchedulerImpl<K,V> implements ShuffleScheduler<K,V> {
     while (itr.hasNext()) {
       TaskAttemptID id = itr.next();
       if (!obsoleteMaps.contains(id) && !finishedMaps[id.getTaskID().getId()]) {
-        host.addKnownMap(id);
+        host.addKnownMap(id,false);
       }
     }
     LOG.info("assigned " + includedMaps + " of " + totalSize + " to " +

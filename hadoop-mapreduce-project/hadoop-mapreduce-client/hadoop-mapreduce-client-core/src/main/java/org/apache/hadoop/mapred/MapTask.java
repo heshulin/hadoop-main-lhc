@@ -1058,7 +1058,6 @@ public class MapTask extends Task {
       combinerRunner = CombinerRunner.create(job, getTaskID(),
               combineInputCounter,
               reporter, null);
-      combinerRunner = null;
       if (combinerRunner != null) {
         final Counters.Counter combineOutputCounter =
                 reporter.getCounter(TaskCounter.COMBINE_OUTPUT_RECORDS);
@@ -1669,9 +1668,11 @@ public class MapTask extends Task {
             if(spilltimes %2 == 0){
               System.out.println("start merge");
               nowIndex = numSpills;
-              shxyMergeParts();
-              sendSend(umbilical);
-              lastIndex = nowIndex;
+              if(shxyMergeParts()) {
+                sendSend(umbilical);
+                lastIndex = nowIndex;
+              }
+
               System.out.println("end merge");
             }
 //                        new Thread(){
@@ -2007,7 +2008,7 @@ public class MapTask extends Task {
     int lastIndex = 0;
     int nowIndex = 0;
     int mergeTimes = 0;
-    private void shxyMergeParts() throws IOException, InterruptedException,
+    private boolean shxyMergeParts() throws IOException, InterruptedException,
             ClassNotFoundException {
       // get the approximate size of the final output/index files
       long finalOutFileSize = 0;
@@ -2024,9 +2025,9 @@ public class MapTask extends Task {
         mergeTimes++;
       }else {
         System.out.println("没有新的spill");
-        return;
+        return false;
       }
-      /*if (nowIndex == 1) { //the spill is the final output
+      if (nowIndex == 1) { //the spill is the final output
         System.out.println("shxy : final output");
         sameVolRename(filename[0],
             mapOutputFile.getOutputFileForWriteInVolume(filename[0]));
@@ -2039,8 +2040,8 @@ public class MapTask extends Task {
         }
         sortPhase.complete();
 
-        return;
-      }*/
+        return true;
+      }
 
       // read in paged indices
       for (int i = indexCacheList.size(); i < nowIndex; ++i) {
@@ -2092,7 +2093,7 @@ public class MapTask extends Task {
           finalOut.close();
         }
         sortPhase.complete();
-        return;
+        return true;
       }
       {
         sortPhase.addPhases(partitions); // Divide sort phase into sub-phases
@@ -2164,6 +2165,7 @@ public class MapTask extends Task {
                     rfs.delete(filename[i],true);
                 }*/
       }
+      return true;
     }
 
     private void mergeParts() throws IOException, InterruptedException,

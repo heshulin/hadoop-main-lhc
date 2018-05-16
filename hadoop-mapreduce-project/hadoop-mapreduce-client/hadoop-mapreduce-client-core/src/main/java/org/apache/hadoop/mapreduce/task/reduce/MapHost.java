@@ -18,7 +18,10 @@
 package org.apache.hadoop.mapreduce.task.reduce;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -40,7 +43,7 @@ public class MapHost {
   private final String hostName;
   private final String baseUrl;
   private List<TaskAttemptID> maps = new ArrayList<TaskAttemptID>();
-  
+  private Map<TaskAttemptID,Boolean> oMaps = new ConcurrentHashMap<>();
   public MapHost(String hostName, String baseUrl) {
     this.hostName = hostName;
     this.baseUrl = baseUrl;
@@ -58,8 +61,12 @@ public class MapHost {
     return baseUrl;
   }
 
-  public synchronized void addKnownMap(TaskAttemptID mapId) {
+  public synchronized void addKnownMap(TaskAttemptID mapId,boolean isSucc) {
+
     maps.add(mapId);
+    oMaps.put(mapId,isSucc);
+    System.out.println("!!!增加 id：" + mapId);
+    print(oMaps);
     if (state == State.IDLE) {
       state = State.PENDING;
     }
@@ -118,11 +125,18 @@ public class MapHost {
     this.mTimes = mTimes;
   }
 
-  boolean isSucc = true;
-  public void setSucc(boolean b){
-    isSucc = b;
+  public Boolean getIdIsSucc(TaskAttemptID id){
+    System.out.println("你到底要找那个id? = " + id);
+    print(oMaps);
+
+    return oMaps.get(id);
   }
-  public boolean getSucc(){
-    return isSucc;
+
+  private void print(Map<TaskAttemptID,Boolean> map){
+    System.out.println("map size = " + oMaps.size());
+    for (Map.Entry<TaskAttemptID,Boolean> entry:map.entrySet()
+         ) {
+      System.out.println("you ->" + entry.getKey() + "  " + entry.getValue());
+    }
   }
 }

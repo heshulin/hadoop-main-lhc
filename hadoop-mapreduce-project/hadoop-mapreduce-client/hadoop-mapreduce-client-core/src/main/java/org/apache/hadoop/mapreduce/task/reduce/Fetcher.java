@@ -187,7 +187,7 @@ class Fetcher<K,V> extends Thread {
 
           // Get a host to shuffle from
           host = scheduler.getHost();
-          System.out.println("从host复制：copy from host:" + host.getHostName() + "  " + host.getSucc());
+          System.out.println("从host复制：copy from host:" + host.getHostName());
           //使进程状态为忙碌
           metrics.threadBusy();
           // Shuffle

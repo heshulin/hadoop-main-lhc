@@ -151,6 +151,7 @@ class EventFetcher<K,V> extends Thread {
       for (TaskCompletionEvent event : events) {
         System.out.println("取Completion事件test4");
         scheduler.resolve(event);
+        LOG.info("何树林：Completion++");
         if (TaskCompletionEvent.Status.SUCCEEDED == event.getTaskStatus()) {
           ++numNewMaps;
         }
