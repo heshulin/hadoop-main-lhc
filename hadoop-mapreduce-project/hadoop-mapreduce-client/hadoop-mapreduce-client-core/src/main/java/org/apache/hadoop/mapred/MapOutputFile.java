@@ -54,7 +54,7 @@ public abstract class MapOutputFile implements Configurable {
    * @return path
    * @throws IOException
    */
-  public abstract Path getOutputFile() throws IOException;
+  public abstract Path getOutputFile(String ecpVersion) throws IOException;
 
   /**
    * Create a local map output file name.
@@ -63,12 +63,12 @@ public abstract class MapOutputFile implements Configurable {
    * @return path
    * @throws IOException
    */
-  public abstract Path getOutputFileForWrite(long size) throws IOException;
+  public abstract Path getOutputFileForWrite(long size, String ecpVersion) throws IOException;
 
   /**
    * Create a local map output file name on the same volume.
    */
-  public abstract Path getOutputFileForWriteInVolume(Path existing);
+  public abstract Path getOutputFileForWriteInVolume(Path existing, String ecpVersion);
 
   /**
    * Return the path to a local map output index file created earlier
@@ -76,7 +76,7 @@ public abstract class MapOutputFile implements Configurable {
    * @return path
    * @throws IOException
    */
-  public abstract Path getOutputIndexFile() throws IOException;
+  public abstract Path getOutputIndexFile(String ecpVersion) throws IOException;
 
   /**
    * Create a local map output index file name.
@@ -85,12 +85,12 @@ public abstract class MapOutputFile implements Configurable {
    * @return path
    * @throws IOException
    */
-  public abstract Path getOutputIndexFileForWrite(long size) throws IOException;
+  public abstract Path getOutputIndexFileForWrite(long size, String ecpVersion) throws IOException;
 
   /**
    * Create a local map output index file name on the same volume.
    */
-  public abstract Path getOutputIndexFileForWriteInVolume(Path existing);
+  public abstract Path getOutputIndexFileForWriteInVolume(Path existing, String ecpVersion);
 
   /**
    * Return a local map spill file created earlier.

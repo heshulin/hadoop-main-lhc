@@ -81,7 +81,7 @@ abstract public class Task implements Writable, Configurable {
 
   public static String MERGED_OUTPUT_PREFIX = ".merged";
   public static final long DEFAULT_COMBINE_RECORDS_BEFORE_PROGRESS = 10000;
-  
+
   /**
    * @deprecated Provided for compatibility. Use {@link TaskCounter} instead.
    */
@@ -1139,7 +1139,7 @@ abstract public class Task implements Writable, Configurable {
 
     if (isMapTask() && conf.getNumReduceTasks() > 0) {
       try {
-        Path mapOutput =  mapOutputFile.getOutputFile();
+        Path mapOutput =  mapOutputFile.getOutputFile("0");
         FileSystem localFS = FileSystem.getLocal(conf);
         return localFS.getFileStatus(mapOutput).getLen();
       } catch (IOException e) {

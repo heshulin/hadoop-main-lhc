@@ -52,10 +52,10 @@ public class MROutputFiles extends MapOutputFile {
    * @throws IOException
    */
   @Override
-  public Path getOutputFile()
+  public Path getOutputFile(String ecpVersion)
       throws IOException {
     return lDirAlloc.getLocalPathToRead(MRJobConfig.OUTPUT + Path.SEPARATOR
-        + MAP_OUTPUT_FILENAME_STRING, getConf());
+        + ecpVersion +MAP_OUTPUT_FILENAME_STRING, getConf());
   }
 
   /**
@@ -66,18 +66,18 @@ public class MROutputFiles extends MapOutputFile {
    * @throws IOException
    */
   @Override
-  public Path getOutputFileForWrite(long size)
+  public Path getOutputFileForWrite(long size, String ecpVersion)
       throws IOException {
     return lDirAlloc.getLocalPathForWrite(MRJobConfig.OUTPUT + Path.SEPARATOR
-        + MAP_OUTPUT_FILENAME_STRING, size, getConf());
+        + ecpVersion + MAP_OUTPUT_FILENAME_STRING, size, getConf());
   }
 
   /**
    * Create a local map output file name on the same volume.
    */
   @Override
-  public Path getOutputFileForWriteInVolume(Path existing) {
-    return new Path(existing.getParent(), MAP_OUTPUT_FILENAME_STRING);
+  public Path getOutputFileForWriteInVolume(Path existing, String ecpVersion) {
+    return new Path(existing.getParent(), ecpVersion + MAP_OUTPUT_FILENAME_STRING);
   }
 
   /**
@@ -87,10 +87,10 @@ public class MROutputFiles extends MapOutputFile {
    * @throws IOException
    */
   @Override
-  public Path getOutputIndexFile()
+  public Path getOutputIndexFile(String ecpVersion)
       throws IOException {
     return lDirAlloc.getLocalPathToRead(MRJobConfig.OUTPUT + Path.SEPARATOR
-        + MAP_OUTPUT_FILENAME_STRING + MAP_OUTPUT_INDEX_SUFFIX_STRING,
+        + ecpVersion +MAP_OUTPUT_FILENAME_STRING + MAP_OUTPUT_INDEX_SUFFIX_STRING,
         getConf());
   }
 
@@ -102,10 +102,10 @@ public class MROutputFiles extends MapOutputFile {
    * @throws IOException
    */
   @Override
-  public Path getOutputIndexFileForWrite(long size)
+  public Path getOutputIndexFileForWrite(long size, String ecpVersion)
       throws IOException {
     return lDirAlloc.getLocalPathForWrite(MRJobConfig.OUTPUT + Path.SEPARATOR
-        + MAP_OUTPUT_FILENAME_STRING + MAP_OUTPUT_INDEX_SUFFIX_STRING,
+        + ecpVersion +MAP_OUTPUT_FILENAME_STRING + MAP_OUTPUT_INDEX_SUFFIX_STRING,
         size, getConf());
   }
 
@@ -113,9 +113,9 @@ public class MROutputFiles extends MapOutputFile {
    * Create a local map output index file name on the same volume.
    */
   @Override
-  public Path getOutputIndexFileForWriteInVolume(Path existing) {
+  public Path getOutputIndexFileForWriteInVolume(Path existing, String ecpVersion) {
     return new Path(existing.getParent(),
-        MAP_OUTPUT_FILENAME_STRING + MAP_OUTPUT_INDEX_SUFFIX_STRING);
+        ecpVersion + MAP_OUTPUT_FILENAME_STRING + MAP_OUTPUT_INDEX_SUFFIX_STRING);
   }
 
   /**

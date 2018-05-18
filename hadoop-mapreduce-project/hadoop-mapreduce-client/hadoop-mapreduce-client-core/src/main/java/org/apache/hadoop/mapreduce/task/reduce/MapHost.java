@@ -44,6 +44,7 @@ public class MapHost {
   private final String baseUrl;
   private List<TaskAttemptID> maps = new ArrayList<TaskAttemptID>();
   private Map<TaskAttemptID,Boolean> oMaps = new ConcurrentHashMap<>();
+  private Map<TaskAttemptID,Integer> vMaps = new ConcurrentHashMap<>();
   public MapHost(String hostName, String baseUrl) {
     this.hostName = hostName;
     this.baseUrl = baseUrl;
@@ -65,6 +66,8 @@ public class MapHost {
 
     maps.add(mapId);
     oMaps.put(mapId,isSucc);
+    // 标记ecpVersion
+    vMaps.put(mapId, vMaps.get(mapId) == null ? 0 : vMaps.get(mapId) + 1);
     System.out.println("!!!增加 id：" + mapId);
     print(oMaps);
     if (state == State.IDLE) {
@@ -138,5 +141,9 @@ public class MapHost {
          ) {
       System.out.println("you ->" + entry.getKey() + "  " + entry.getValue());
     }
+  }
+
+  public Integer getEcpVersion(TaskAttemptID mapId){
+    return vMaps.get(mapId);
   }
 }

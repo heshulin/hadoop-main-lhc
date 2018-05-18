@@ -123,17 +123,15 @@ class EventFetcher<K,V> extends Thread {
     TaskCompletionEvent events[] = null;
 
     do {
-      System.out.println("取Completion事件");
-      System.out.println("取Completion事件test1");
+      LOG.info("取Completion事件");
       MapTaskCompletionEventsUpdate update =
           umbilical.getMapCompletionEvents(
               (org.apache.hadoop.mapred.JobID)reduce.getJobID(),
               fromEventIdx,
               maxEventsToFetch,
               (org.apache.hadoop.mapred.TaskAttemptID)reduce);
-      System.out.println("取Completion事件test2");
       events = update.getMapTaskCompletionEvents();
-      System.out.println("取Completion事件test3");
+      LOG.info("何树林：completion size"+events.length);
       LOG.debug("Got " + events.length + " map completion events from " +
                fromEventIdx);
 
@@ -149,9 +147,8 @@ class EventFetcher<K,V> extends Thread {
       // 3. Remove TIPFAILED maps from neededOutputs since we don't need their
       //    outputs at all.
       for (TaskCompletionEvent event : events) {
-        System.out.println("取Completion事件test4");
         scheduler.resolve(event);
-        LOG.info("何树林：Completion++");
+        LOG.info("何树林：completion++");
         if (TaskCompletionEvent.Status.SUCCEEDED == event.getTaskStatus()) {
           ++numNewMaps;
         }
@@ -164,39 +161,20 @@ class EventFetcher<K,V> extends Thread {
   protected int  getMapSendedEvents()
           throws IOException, InterruptedException {
 
-    System.out.println("取send事件");
     LOG.info("取send事件");
     int numSendMaps = 0;
-    System.out.println("调试信息1");
     TaskSendEvent events[] = null;
-    System.out.println("调试信息2");
     do {
-      System.out.println("调试信息3");
       LOG.info("reduce中umbilical类型："+umbilical.getClass().getName());
-      System.out.println("reduce中umbilical类型："+umbilical.getClass().getName());
-//      try{
-        System.out.println("在这");
-        LOG.info("在这");
       MapTaskSendEventsUpdate update = umbilical.getMapSendEvents(
                         (org.apache.hadoop.mapred.JobID)reduce.getJobID(),
                         fromEventIdxSend,
                         maxEventsToFetch,
                         (org.apache.hadoop.mapred.TaskAttemptID)reduce);
 
-        System.out.println("结束");
-        LOG.info("结束");
-//      }catch (Exception e)
-//      {
-        System.out.println("ef error_何树林");
-        LOG.info("ef error_何树林");
-//      }
-
-
-      System.out.println("调试信息4");
       events = update.getMapTaskSendEvents();
-      System.out.println("调试信息5");
-      System.out.println("何树林：sendsize"+events.length);
-      LOG.info("何树林：sendsize"+events.length);
+      LOG.info("何树林：send size"+events.length);
+
       LOG.debug("Got " + events.length + " map completion events from " +
               fromEventIdxSend);
 
@@ -213,7 +191,6 @@ class EventFetcher<K,V> extends Thread {
       //    outputs at all.
       for (TaskSendEvent event : events) {
         scheduler.sendresolve(event);
-        System.out.println("何树林：sendsend++");
         LOG.info("何树林：sendsend++");
         if (TaskSendEvent.Status.SENDED == event.getTaskStatus()) {
           ++numSendMaps;

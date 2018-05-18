@@ -62,7 +62,7 @@ class IndexCache {
                                          Path fileName, String expectedIndexOwner)
     throws IOException {
 
-    IndexInformation info = cache.get(mapId);
+    IndexInformation info = cache.get(String.valueOf(fileName));
 
     if (info == null) {
       info = readIndexFileToCache(fileName, mapId, expectedIndexOwner);
@@ -100,7 +100,7 @@ class IndexCache {
     throws IOException {
     IndexInformation info;
     IndexInformation newInd = new IndexInformation();
-    if ((info = cache.putIfAbsent(mapId, newInd)) != null) {
+    if ((info = cache.putIfAbsent(String.valueOf(indexFileName), newInd)) != null) {
       synchronized(info) {
         while (isUnderConstruction(info)) {
           try {
@@ -119,7 +119,7 @@ class IndexCache {
       tmp = new SpillRecord(indexFileName, conf, expectedIndexOwner);
     } catch (Throwable e) { 
       tmp = new SpillRecord(0);
-      cache.remove(mapId);
+      cache.remove(indexFileName);
       throw new IOException("Error Reading IndexFile", e);
     } finally { 
       synchronized (newInd) { 
@@ -143,12 +143,12 @@ class IndexCache {
    * is discarded.
    * @param mapId The taskID of this map.
    */
-  public void removeMap(String mapId) {
-    IndexInformation info = cache.get(mapId);
+  public void removeMap(String mapId, String fileName) {
+    IndexInformation info = cache.get(fileName);
     if (info == null || isUnderConstruction(info)) {
       return;
     }
-    info = cache.remove(mapId);
+    info = cache.remove(fileName);
     if (info != null) {
       totalMemoryUsed.addAndGet(-info.getSize());
       if (!queue.remove(mapId)) {

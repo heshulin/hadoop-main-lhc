@@ -294,6 +294,7 @@ public class ShuffleHandler extends AuxiliaryService {
     private String user;
     private Map<String, Shuffle.MapOutputInfo> infoMap;
     private String outputBasePathStr;
+    private static ConcurrentHashMap<String/**MapId*/, Integer> ecpVersions = new ConcurrentHashMap<>();
 
     public ReduceContext(List<String> mapIds, int rId,
                          ChannelHandlerContext context, String usr,
@@ -351,6 +352,16 @@ public class ShuffleHandler extends AuxiliaryService {
 
     public AtomicInteger getMapsToWait() {
       return mapsToWait;
+    }
+
+    public synchronized String getAndIncreaseEcpVersion(String mapId){
+      if (ecpVersions.get(mapId) == null){
+        ecpVersions.put(mapId, 0);
+        return "0";
+      }
+      int ecpVersion = ecpVersions.get(mapId);
+      ecpVersions.put(mapId, ecpVersion + 1);
+      return String.valueOf(ecpVersion);
     }
   }
 
@@ -848,6 +859,7 @@ public class ShuffleHandler extends AuxiliaryService {
         }
       }
       final List<String> mapIds = splitMaps(q.get("map"));
+      final List<String> ecpVersions = splitMaps(q.get("ecpVersion"));
       final List<String> reduceQ = q.get("reduce");
       final List<String> jobQ = q.get("job");
       if (LOG.isDebugEnabled()) {
@@ -906,7 +918,7 @@ public class ShuffleHandler extends AuxiliaryService {
 
       try {
         populateHeaders(mapIds, outputBasePathStr, user, reduceId, request,
-          response, keepAliveParam, mapOutputInfoMap);
+          response, keepAliveParam, mapOutputInfoMap, ecpVersions);
       } catch(IOException e) {
         ch.write(response);
         LOG.error("Shuffle error in populating headers :", e);
@@ -950,7 +962,7 @@ public class ShuffleHandler extends AuxiliaryService {
           if (info == null) {
             info = getMapOutputInfo(reduceContext.getOutputBasePathStr() +
                        mapId, mapId, reduceContext.getReduceId(),
-                       reduceContext.getUser());
+                       reduceContext.getUser(), reduceContext.getAndIncreaseEcpVersion(mapId));
           }
           nextMap = sendMapOutput(
               reduceContext.getCtx(),
@@ -995,15 +1007,15 @@ public class ShuffleHandler extends AuxiliaryService {
     }
 
     protected MapOutputInfo getMapOutputInfo(String base, String mapId,
-        int reduce, String user) throws IOException {
+        int reduce, String user, String ecpVersion) throws IOException {
       // Index file
       Path indexFileName =
-          lDirAlloc.getLocalPathToRead(base + "/file.out.index", conf);
+          lDirAlloc.getLocalPathToRead(base + "/" + ecpVersion +"file.out.index", conf);
       IndexRecord info =
           indexCache.getIndexInformation(mapId, reduce, indexFileName, user);
 
       Path mapOutputFileName =
-          lDirAlloc.getLocalPathToRead(base + "/file.out", conf);
+          lDirAlloc.getLocalPathToRead(base + "/" + ecpVersion +"file.out", conf);
       if (LOG.isDebugEnabled()) {
         LOG.debug(base + " : " + mapOutputFileName + " : " + indexFileName);
       }
@@ -1013,29 +1025,48 @@ public class ShuffleHandler extends AuxiliaryService {
 
     protected void populateHeaders(List<String> mapIds, String outputBaseStr,
         String user, int reduce, HttpRequest request, HttpResponse response,
-        boolean keepAliveParam, Map<String, MapOutputInfo> mapOutputInfoMap)
+        boolean keepAliveParam, Map<String, MapOutputInfo> mapOutputInfoMap, List<String> ecpVersions)
         throws IOException {
 
       long contentLength = 0;
-      for (String mapId : mapIds) {
-        String base = outputBaseStr + mapId;
-        MapOutputInfo outputInfo = getMapOutputInfo(base, mapId, reduce, user);
+      for (int i = 0 ; i < mapIds.size() ; i++){
+        String base = outputBaseStr + mapIds.get(i);
+        MapOutputInfo outputInfo = getMapOutputInfo(base, mapIds.get(i), reduce, user, ecpVersions.get(i));
         if (mapOutputInfoMap.size() < mapOutputMetaInfoCacheSize) {
-          mapOutputInfoMap.put(mapId, outputInfo);
+          mapOutputInfoMap.put(mapIds.get(i), outputInfo);
         }
         // Index file
         Path indexFileName =
-            lDirAlloc.getLocalPathToRead(base + "/file.out.index", conf);
+            lDirAlloc.getLocalPathToRead(base + "/" + ecpVersions.get(i) +"file.out.index", conf);
         IndexRecord info =
-            indexCache.getIndexInformation(mapId, reduce, indexFileName, user);
+            indexCache.getIndexInformation(mapIds.get(i), reduce, indexFileName, user);
         ShuffleHeader header =
-            new ShuffleHeader(mapId, info.partLength, info.rawLength, reduce);
+            new ShuffleHeader(mapIds.get(i), info.partLength, info.rawLength, reduce);
         DataOutputBuffer dob = new DataOutputBuffer();
         header.write(dob);
 
         contentLength += info.partLength;
         contentLength += dob.getLength();
       }
+      //for (String mapId : mapIds) {
+      //  String base = outputBaseStr + mapId;
+      //  MapOutputInfo outputInfo = getMapOutputInfo(base, mapId, reduce, user);
+      //  if (mapOutputInfoMap.size() < mapOutputMetaInfoCacheSize) {
+      //    mapOutputInfoMap.put(mapId, outputInfo);
+      //  }
+      //  // Index file
+      //  Path indexFileName =
+      //      lDirAlloc.getLocalPathToRead(base + "/file.out.index", conf);
+      //  IndexRecord info =
+      //      indexCache.getIndexInformation(mapId, reduce, indexFileName, user);
+      //  ShuffleHeader header =
+      //      new ShuffleHeader(mapId, info.partLength, info.rawLength, reduce);
+      //  DataOutputBuffer dob = new DataOutputBuffer();
+      //  header.write(dob);
+      //
+      //  contentLength += info.partLength;
+      //  contentLength += dob.getLength();
+      //}
 
       // Now set the response headers.
       setResponseHeaders(response, keepAliveParam, contentLength);

@@ -65,9 +65,9 @@ public class YarnOutputFiles extends MapOutputFile {
    * @return path
    * @throws IOException
    */
-  public Path getOutputFile() throws IOException {
+  public Path getOutputFile(String ecpVersion) throws IOException {
     Path attemptOutput =
-      new Path(getAttemptOutputDir(), MAP_OUTPUT_FILENAME_STRING);
+      new Path(getAttemptOutputDir(), ecpVersion + MAP_OUTPUT_FILENAME_STRING);
     return lDirAlloc.getLocalPathToRead(attemptOutput.toString(), conf);
   }
 
@@ -78,20 +78,20 @@ public class YarnOutputFiles extends MapOutputFile {
    * @return path
    * @throws IOException
    */
-  public Path getOutputFileForWrite(long size) throws IOException {
+  public Path getOutputFileForWrite(long size, String ecpVersion) throws IOException {
     Path attemptOutput = 
-      new Path(getAttemptOutputDir(), MAP_OUTPUT_FILENAME_STRING);
+      new Path(getAttemptOutputDir(), ecpVersion + MAP_OUTPUT_FILENAME_STRING);
     return lDirAlloc.getLocalPathForWrite(attemptOutput.toString(), size, conf);
   }
 
   /**
    * Create a local map output file name on the same volume.
    */
-  public Path getOutputFileForWriteInVolume(Path existing) {
+  public Path getOutputFileForWriteInVolume(Path existing, String ecpVersion) {
     Path outputDir = new Path(existing.getParent(), JOB_OUTPUT_DIR);
     Path attemptOutputDir = new Path(outputDir,
         conf.get(JobContext.TASK_ATTEMPT_ID));
-    return new Path(attemptOutputDir, MAP_OUTPUT_FILENAME_STRING);
+    return new Path(attemptOutputDir, ecpVersion + MAP_OUTPUT_FILENAME_STRING);
   }
 
   /**
@@ -100,9 +100,9 @@ public class YarnOutputFiles extends MapOutputFile {
    * @return path
    * @throws IOException
    */
-  public Path getOutputIndexFile() throws IOException {
+  public Path getOutputIndexFile(String ecpVersion) throws IOException {
     Path attemptIndexOutput =
-      new Path(getAttemptOutputDir(), MAP_OUTPUT_FILENAME_STRING +
+      new Path(getAttemptOutputDir(), ecpVersion + MAP_OUTPUT_FILENAME_STRING +
                                       MAP_OUTPUT_INDEX_SUFFIX_STRING);
     return lDirAlloc.getLocalPathToRead(attemptIndexOutput.toString(), conf);
   }
@@ -114,9 +114,9 @@ public class YarnOutputFiles extends MapOutputFile {
    * @return path
    * @throws IOException
    */
-  public Path getOutputIndexFileForWrite(long size) throws IOException {
+  public Path getOutputIndexFileForWrite(long size, String ecpVersion) throws IOException {
     Path attemptIndexOutput =
-      new Path(getAttemptOutputDir(), MAP_OUTPUT_FILENAME_STRING +
+      new Path(getAttemptOutputDir(), ecpVersion + MAP_OUTPUT_FILENAME_STRING +
                                       MAP_OUTPUT_INDEX_SUFFIX_STRING);
     return lDirAlloc.getLocalPathForWrite(attemptIndexOutput.toString(),
         size, conf);
@@ -125,11 +125,11 @@ public class YarnOutputFiles extends MapOutputFile {
   /**
    * Create a local map output index file name on the same volume.
    */
-  public Path getOutputIndexFileForWriteInVolume(Path existing) {
+  public Path getOutputIndexFileForWriteInVolume(Path existing, String ecpVersion) {
     Path outputDir = new Path(existing.getParent(), JOB_OUTPUT_DIR);
     Path attemptOutputDir = new Path(outputDir,
         conf.get(JobContext.TASK_ATTEMPT_ID));
-    return new Path(attemptOutputDir, MAP_OUTPUT_FILENAME_STRING +
+    return new Path(attemptOutputDir, ecpVersion + MAP_OUTPUT_FILENAME_STRING +
                                       MAP_OUTPUT_INDEX_SUFFIX_STRING);
   }
 

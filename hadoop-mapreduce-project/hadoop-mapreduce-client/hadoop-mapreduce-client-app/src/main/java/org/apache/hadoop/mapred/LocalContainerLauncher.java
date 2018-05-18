@@ -503,11 +503,11 @@ public class LocalContainerLauncher extends AbstractService implements
       TaskAttemptId mapId, MapOutputFile subMapOutputFile) throws IOException {
     FileSystem localFs = FileSystem.getLocal(conf);
     // move map output to reduce input
-    Path mapOut = subMapOutputFile.getOutputFile();
+    Path mapOut = subMapOutputFile.getOutputFile("0");
     FileStatus mStatus = localFs.getFileStatus(mapOut);
     Path reduceIn = subMapOutputFile.getInputFileForWrite(
         TypeConverter.fromYarn(mapId).getTaskID(), mStatus.getLen());
-    Path mapOutIndex = subMapOutputFile.getOutputIndexFile();
+    Path mapOutIndex = subMapOutputFile.getOutputIndexFile("0");
     Path reduceInIndex = new Path(reduceIn.toString() + ".index");
     LOG.info("shxy : Renaming map output file for task attempt "
             + mapId.toString() + " from original location " + mapOut.toString()
@@ -540,28 +540,28 @@ public class LocalContainerLauncher extends AbstractService implements
     }
     
     @Override
-    public Path getOutputFile() throws IOException {
+    public Path getOutputFile(String ecpVersion) throws IOException {
       return path;
     }
 
     @Override
-    public Path getOutputFileForWrite(long size) throws IOException {
+    public Path getOutputFileForWrite(long size, String ecpVersion) throws IOException {
       throw new UnsupportedOperationException();
     }
     @Override
-    public Path getOutputFileForWriteInVolume(Path existing) {
+    public Path getOutputFileForWriteInVolume(Path existing, String ecpVersion) {
       throw new UnsupportedOperationException();
     }
     @Override
-    public Path getOutputIndexFile() throws IOException {
+    public Path getOutputIndexFile(String ecpVersion) throws IOException {
       throw new UnsupportedOperationException();
     }
     @Override
-    public Path getOutputIndexFileForWrite(long size) throws IOException {
+    public Path getOutputIndexFileForWrite(long size, String ecpVersion) throws IOException {
       throw new UnsupportedOperationException();
     }
     @Override
-    public Path getOutputIndexFileForWriteInVolume(Path existing) {
+    public Path getOutputIndexFileForWriteInVolume(Path existing, String ecpVersion) {
       throw new UnsupportedOperationException();
     }
     @Override

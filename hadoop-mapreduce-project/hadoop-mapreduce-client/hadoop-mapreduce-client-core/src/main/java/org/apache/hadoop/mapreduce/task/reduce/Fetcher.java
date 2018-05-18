@@ -675,6 +675,15 @@ class Fetcher<K,V> extends Thread {
       first = false;
     }
 
+    url.append("&ecpVersion=");
+    first = true;
+    for (TaskAttemptID mapId : maps) {
+      if (!first) {
+        url.append(",");
+      }
+      url.append(host.getEcpVersion(mapId));
+      first = false;
+    }
     LOG.debug("MapOutput URL for " + host + " -> " + url.toString());
     System.out.println("MapOutput URL for " + host + " -> " + url.toString());
     return new URL(url.toString());

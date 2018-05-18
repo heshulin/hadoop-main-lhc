@@ -116,7 +116,7 @@ class LocalFetcher<K,V> extends Fetcher<K, V> {
    */
   private boolean copyMapOutput(TaskAttemptID mapTaskId) throws IOException {
     // Figure out where the map task stored its output.
-    Path mapOutputFileName = localMapFiles.get(mapTaskId).getOutputFile();
+    Path mapOutputFileName = localMapFiles.get(mapTaskId).getOutputFile("0");
     Path indexFileName = mapOutputFileName.suffix(".index");
 
     // Read its index to determine the location of our split

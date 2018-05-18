@@ -44,13 +44,13 @@ import org.apache.hadoop.util.DataChecksum;
 @InterfaceStability.Unstable
 public class IFileInputStream extends InputStream {
   
-  private final InputStream in; //The input stream to be verified for checksum.
-  private final FileDescriptor inFd; // the file descriptor, if it is known
-  private final long length; //The total length of the input file
-  private final long dataLength;
+  private InputStream in; //The input stream to be verified for checksum.
+  private FileDescriptor inFd; // the file descriptor, if it is known
+  private long length; //The total length of the input file
+  private long dataLength;
   private DataChecksum sum;
   private long currentOffset = 0;
-  private final byte b[] = new byte[1];
+  private byte b[] = new byte[1];
   private byte csum[] = null;
   private int checksumSize;
 
